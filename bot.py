@@ -1,5 +1,5 @@
 import uvicorn
-from aiogram import Bot, Dispatcher, types, Router
+from aiogram import Bot, Dispatcher
 from aiogram.types import Update
 from fastapi import FastAPI, Request, status
 from contextlib import asynccontextmanager
@@ -64,7 +64,7 @@ def main():
     # setup_logging()
 
     print(f"Зарегистрированные обработчики в user_router: {user_router.resolve_used_update_types()}")
-    uvicorn.run("bot:app", reload=False)
+    uvicorn.run("bot:app", reload=True)
 
     # except Exception as e:
     #     print(e)
