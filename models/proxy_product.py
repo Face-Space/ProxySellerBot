@@ -3,8 +3,9 @@ from dataclasses import dataclass
 
 
 class ProxyType(str, Enum):
-    HTTPS = "https"
+    HTTPS = "http/s"
     SOCKS5 = "socks5"
+    IPv4 = "IPv4"
 
 
 @dataclass

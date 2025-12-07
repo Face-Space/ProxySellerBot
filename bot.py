@@ -6,7 +6,9 @@ from contextlib import asynccontextmanager
 import logging
 
 from config import *
+from database.engine import create_db, session_maker
 from handlers.user_private import user_router
+from middlewares.db import DataBaseSession
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -25,6 +27,9 @@ async def lifespan(my_app: FastAPI):
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != WEBHOOK_URL:
         await bot.set_webhook(url=WEBHOOK_URL, drop_pending_updates=True)
+
+    await create_db()
+    dp.update.middleware(DataBaseSession(session_pool=session_maker))
     await bot.send_message(5138537564, "Бот успешно запущен")
     yield
 
