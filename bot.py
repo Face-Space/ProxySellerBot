@@ -68,7 +68,6 @@ def main():
     # try:
     # setup_logging()
 
-    print(f"Зарегистрированные обработчики в user_router: {user_router.resolve_used_update_types()}")
     uvicorn.run("bot:app", reload=True)
 
     # except Exception as e:
