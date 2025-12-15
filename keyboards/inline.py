@@ -1,4 +1,3 @@
-from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
@@ -14,10 +13,14 @@ proxy_loc.add(InlineKeyboardButton(text="Канада🇨🇦", callback_data="c
 proxy_loc.adjust(2)
 
 
-def proxies_kb(proxy_name: str) -> InlineKeyboardBuilder:
+def proxies_kb(data: dict) -> InlineKeyboardBuilder:
     kb = InlineKeyboardBuilder()
-    kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=f"name_{proxy_name}"))
-    kb.adjust(2)
+    for proxy in data:
+        proxy_name = proxy.name
+        quantity = proxy.quantity
+        price = proxy.price
+        kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=f"name_{quantity}_{price}"))
+    kb.adjust(1)
     return kb
 
 
@@ -34,7 +37,7 @@ rental_period.add(InlineKeyboardButton(text="1 день", callback_data="period_
                   InlineKeyboardButton(text="1 месяц", callback_data="period_30"),
                   InlineKeyboardButton(text="6 месяцев", callback_data="period_180"),
                   InlineKeyboardButton(text="1 год", callback_data="period_365"))
-rental_period.adjust(1)
+rental_period.adjust(2)
 
 
 class GlobalData:
@@ -45,4 +48,16 @@ class GlobalData:
         cls.data[key] = value
 
 
+def proxy_quantity(quantity: int) -> InlineKeyboardBuilder:
+    kb = InlineKeyboardBuilder()
+    for i in range(quantity):
+        kb.add(InlineKeyboardButton(text=f"{i}", callback_data=f"quantity_{quantity}"))
+    kb.adjust(2)
+    return kb
+
+
+payment_types = InlineKeyboardBuilder()
+payment_types.add(InlineKeyboardButton(text="Paymaster", callback_data="payment_paymaster"),
+                  InlineKeyboardButton(text="USDT", callback_data="payment_usdt"))
+payment_types.adjust(2)
 
