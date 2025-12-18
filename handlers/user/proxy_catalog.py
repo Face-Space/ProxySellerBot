@@ -1,74 +1,64 @@
-from aiogram import Router, types, F
-from aiogram.filters import Command, CommandStart
-import logging
-
+from aiogram import Router, F, types
+from aiogram.fsm.context import FSMContext
 from aiogram.types import LabeledPrice
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import config
+from FSM.states import ProxyCatalog
 from bot_setup import bot
-from database.orm_query import get_proxy, get_quantity
-from keyboards.inline import proxy_loc, proxies_kb, type_proxy, rental_period, GlobalData, proxy_quantity, payment_types
-from keyboards.reply import start_kb
-from models.user import UserDTO
+from keyboards.inline import *
+from orm_query.proxies import ProxiesRepository
 
-logger = logging.getLogger(__name__)
-user_router = Router()
+proxy_catalog_router = Router()
 
 
-@user_router.message(CommandStart())
-async def start_bot(message: types.Message, session: AsyncSession):
-    await message.answer("Привет👋, я ProxySellerBot🤖, и я помогу тебе выбрать необходимый для тебя прокси!",
-                         reply_markup=start_kb)
-    telegram_id = message.from_user.id
-    await UserService.create_if_not_exist(UserDTO(
-        telegram_username=message.from_user.username,
-        telegram_id=telegram_id
-    ), session)
-    # безопасное извлечения/валидация пользовательских данных из сессии БД перед обработкой сообщений
-
-@user_router.message(F.text == "Каталог прокси")
-async def get_country(message: types.Message):
+@proxy_catalog_router.message(F.text == "Каталог прокси")
+async def get_country(message: types.Message, state: FSMContext):
 
     # далее работает уже с апи
     # proxy_catalog = ProxyProviderClient("https://api.proxy-provider.com", "your-api-key")
     # proxies = proxy_catalog.fetch_products()
 
     await message.answer("Вот каталог всех прокси📦 по странам", reply_markup=proxy_loc.as_markup())
+    await state.set_state(ProxyCatalog.country)
 
 
-@user_router.callback_query(F.data.startswith("country"))
-async def get_type(callback: types.CallbackQuery):
+@proxy_catalog_router.callback_query(F.data.startswith("country"), ProxyCatalog.country)
+async def get_type(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     country_name = callback.data.split("_")[1]
 
     # сохраняем полученный коллбэк в словарь, который потом используем для запроса
-    await GlobalData.update_data("country_name", country_name)
+    await state.update_data(country_name=country_name)
     await callback.message.answer("Выберите интересующий вас тип прокси:", reply_markup=type_proxy.as_markup())
+    await state.set_state(ProxyCatalog.proxy_type)
 
 
-@user_router.callback_query(F.data.startswith("type"))
-async def get_period(callback: types.CallbackQuery):
+@proxy_catalog_router.callback_query(F.data.startswith("type"), ProxyCatalog.proxy_type)
+async def get_period(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     proxy_type = callback.data.split("_")[1]
-    await GlobalData.update_data("proxy_type", proxy_type)
-    await callback.message.answer("Отлично, теперь укажите желаемый срок аренды прокси:", reply_markup=rental_period.as_markup())
+    await state.update_data(proxy_type=proxy_type)
+    await callback.message.answer("Отлично, теперь укажите желаемый срок аренды прокси:",
+                                  reply_markup=rental_period.as_markup())
+    await state.set_state(ProxyCatalog.period)
 
 
-@user_router.callback_query(F.data.startswith("period"))
-async def get_prox(callback: types.CallbackQuery, session: AsyncSession):
+@proxy_catalog_router.callback_query(F.data.startswith("period"))
+async def get_prox(callback: types.CallbackQuery, session: AsyncSession, state: FSMContext):
     await callback.answer()
     period_days = callback.data.split("_")[1]
-    await GlobalData.update_data("period_days", period_days)
+    await state.update_data(period_days=period_days)
 
-    data = await get_proxy(session, GlobalData.data)
+    await state.get_data()
+    data = await ProxiesRepository.get_proxy(session, GlobalData.data)
     print(data)
     await callback.message.answer("Вот все доступные прокси под ваши параметры:",
                                   reply_markup=proxies_kb(data).as_markup())
 
 
 
-@user_router.callback_query(F.data.startswith("name"))
+@proxy_catalog_router.callback_query(F.data.startswith("name"))
 async def get_proxies_quantity(callback: types.CallbackQuery, session: AsyncSession):
     await callback.answer()
     quantity = callback.data.split("_")[1]
@@ -78,13 +68,13 @@ async def get_proxies_quantity(callback: types.CallbackQuery, session: AsyncSess
                                   reply_markup=proxy_quantity(int(quantity)).as_markup())
 
 
-@user_router.callback_query(F.data.startswith("quantity"))
-async def get_quantity(callback: types.CallbackQuery):
+@proxy_catalog_router.callback_query(F.data.startswith("quantity"))
+async def payment(callback: types.CallbackQuery):
     await callback.answer()
     await callback.message.answer("Выберите способ оплаты:", reply_markup=payment_types.as_markup())
 
 
-@user_router.callback_query(F.data.startswith("payment"))
+@proxy_catalog_router.callback_query(F.data.startswith("payment"))
 async def payment(callback: types.CallbackQuery):
     await callback.answer()
     period_days = await GlobalData.data["period_days"]
@@ -100,10 +90,3 @@ async def payment(callback: types.CallbackQuery):
         start_parameter="subscription",
         payload=f"{period_days}"
     )
-
-
-@user_router.message(~Command("admin"))
-async def delete_trash(message: types.Message):
-    await message.delete()
-
-

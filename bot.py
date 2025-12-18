@@ -1,5 +1,6 @@
 import uvicorn
 from aiogram import Dispatcher
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import Update, BufferedInputFile
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
@@ -7,14 +8,19 @@ from contextlib import asynccontextmanager
 import logging
 import traceback
 
+from redis.asyncio import Redis
+
+import config
 from bot_setup import bot
 from config import *
 from database.engine import create_db, session_maker
-from handlers.user_private import user_router
+from handlers.user.user_private import user_router
 from middlewares.db import DataBaseSession
 from services.notification import NotificationService
 
-dp = Dispatcher()
+redis = Redis(host=config.REDIS_HOST, password=config.REDIS_PASSWORD)
+# redis = Redis.from_url("redis://localhost:6379/0")
+dp = Dispatcher(storage=RedisStorage(redis=redis))
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +50,9 @@ async def lifespan(my_app: FastAPI):
     logger.warning("Shutting down...")
     await bot.delete_webhook()
     await bot.session.close()
-    await dp.storage.close()
+
+    await dp.storage.close()  # Закрывает пул Aiogram
+    await redis.aclose()  # Закрывает базовое соединение
 
     for admin in ADMIN_ID_LIST:
         try:

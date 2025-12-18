@@ -13,4 +13,5 @@ DB_LITE = os.environ.get("DB_LITE")
 PAYMENT_TOKEN = os.environ.get("PAYMENT_TOKEN")
 ADMIN_ID_LIST_RAW = os.environ.get("ADMIN_ID_LIST").split(",")
 ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID_LIST_RAW]
-
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+REDIS_HOST = os.environ.get("REDIS_HOST")

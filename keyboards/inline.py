@@ -40,12 +40,12 @@ rental_period.add(InlineKeyboardButton(text="1 день", callback_data="period_
 rental_period.adjust(2)
 
 
-class GlobalData:
-    data = {}
-
-    @classmethod
-    async def update_data(cls, key, value):
-        cls.data[key] = value
+# class GlobalData:
+#     data = {}
+#
+#     @classmethod
+#     async def update_data(cls, key, value):
+#         cls.data[key] = value
 
 
 def proxy_quantity(quantity: int) -> InlineKeyboardBuilder:
