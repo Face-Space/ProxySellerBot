@@ -51,7 +51,7 @@ rental_period.adjust(2)
 def proxy_quantity(quantity: int) -> InlineKeyboardBuilder:
     kb = InlineKeyboardBuilder()
     for i in range(quantity):
-        kb.add(InlineKeyboardButton(text=f"{i}", callback_data=f"quantity_{quantity}"))
+        kb.add(InlineKeyboardButton(text=f"{i+1}", callback_data=f"quantity_{i+1}"))
     kb.adjust(2)
     return kb
 

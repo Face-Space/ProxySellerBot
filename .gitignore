@@ -4,3 +4,12 @@
 logs/
 .idea/
 test.py
+
+# Alembic
+alembic.ini
+
+# Локальные БД
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3

@@ -1,10 +1,6 @@
 from sqlalchemy import func, DateTime, String, Integer, Float
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
-
-class Base(DeclarativeBase):
-    created: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
-    updated: Mapped[DateTime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+from models.base import Base
 
 
 class Proxies(Base):
@@ -17,5 +13,4 @@ class Proxies(Base):
     period_days: Mapped[int] = mapped_column(Integer)
     quantity: Mapped[int] = mapped_column(Integer)
     price: Mapped[float] = mapped_column(Float)
-
 

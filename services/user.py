@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user import UserDTO
@@ -29,3 +31,15 @@ class UserService:
                 update_user_dto.telegram_username = user_dto.telegram_username
                 await UserRepository.update(update_user_dto, session)
                 await session.commit()
+
+    @staticmethod
+    def parse_interval(payload: str) -> timedelta:
+        mapping = {
+            "1 день": timedelta(days=1),
+            "7 дней": timedelta(days=7),
+            "1 месяц": timedelta(days=30),
+            "6 месяцев": timedelta(days=183),
+            "1 год": timedelta(days=365)
+        }
+
+        return mapping.get(payload, timedelta(days=0))
