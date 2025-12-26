@@ -1,17 +1,24 @@
+from aiogram.types import CallbackQuery
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Proxies
+from models import Proxies
+from utils.callbacks import ProxyCatalogCallback
 
 
 class ProxiesRepository:
 
     @staticmethod
-    async def get_proxy(session: AsyncSession, data: dict):
+    async def get_proxy(callback: CallbackQuery, session: AsyncSession):
+        unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+        country = unpacked_cb.country
+        proxy_type = unpacked_cb.proxy_type
+        period_days = unpacked_cb.period
+
         query = select(Proxies).where(
-            Proxies.country == data["country_name"],
-                        Proxies.proxy_type == data["proxy_type"],
-                        Proxies.period_days == data["period_days"]
+            Proxies.country == country,
+                        Proxies.proxy_type == proxy_type,
+                        Proxies.period_days == period_days
         )
         result = await session.execute(query)
         return result.scalars().all()

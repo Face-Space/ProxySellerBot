@@ -1,51 +1,71 @@
-from aiogram.types import InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from utils.callbacks import ProxyCatalogCallback
 
 
 proxy_loc = InlineKeyboardBuilder()
-proxy_loc.add(InlineKeyboardButton(text="Канада🇨🇦", callback_data="country_Канада"),
-              InlineKeyboardButton(text="США🇺🇸", callback_data="country_США"),
-              InlineKeyboardButton(text="Польша🇵🇱", callback_data="country_Польша"),
-              InlineKeyboardButton(text="Финляндия🇫🇮", callback_data="country_Финляндия"),
-              InlineKeyboardButton(text="Латвия🇱🇻", callback_data="country_Латвия"),
-              InlineKeyboardButton(text="Россия🇷🇺", callback_data="country_Россия"))
+countries = {"Канада":"🇨🇦", "США":"🇺🇸", "Польша":"🇵🇱", "Финляндия":"🇫🇮", "Латвия":"🇱🇻", "Россия":"🇷🇺"}
+for nation, flag in countries.items():
+    proxy_loc.add(InlineKeyboardButton(text=f"{nation+flag}",
+                                       callback_data=ProxyCatalogCallback(level=1, country=f"{nation}").pack()))
+
 proxy_loc.adjust(2)
 
 
-def proxies_kb(data: dict) -> InlineKeyboardBuilder:
+def type_proxy(callback: CallbackQuery):
+    unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+    country = unpacked_cb.country
     kb = InlineKeyboardBuilder()
-    for proxy in data:
-        proxy_name = proxy.name
-        quantity = proxy.quantity
-        price = proxy.price
-        kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=f"name_{quantity}_{price}"))
-    kb.adjust(1)
+    proxies_types = ["HTTP", "HTTPS", "SOCKS5"]
+    for p in proxies_types:
+        kb.add(InlineKeyboardButton(text=f"{p}",
+                callback_data=ProxyCatalogCallback(level=2, country=country, proxy_type=f"{p}").pack()))
+
+    kb.add(InlineKeyboardButton(text=f"Назад", callback_data=ProxyCatalogCallback(level=0).pack()))
+    kb.adjust(2)
     return kb
 
 
-type_proxy = InlineKeyboardBuilder()
-type_proxy.add(InlineKeyboardButton(text="HTTP/S", callback_data="type_HTTP/S"),
-               InlineKeyboardButton(text="SOCKS5", callback_data="type_SOCKS5"),
-               InlineKeyboardButton(text="IPv4", callback_data="type_IPv4"))
-type_proxy.adjust(1)
+def rental_period(callback: CallbackQuery):
+    unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+    country = unpacked_cb.country
+    proxy_type = unpacked_cb.proxy_type
+    kb = InlineKeyboardBuilder()
+    periods = {
+        "1 день": "1",
+        "7 дней": "7",
+        "1 месяц": "30",
+        "6 месяцев": "180",
+        "1 год": "365"
+    }
+    for day, cb in periods.items():
+        kb.add(InlineKeyboardButton(text=day, callback_data=ProxyCatalogCallback(
+            level=3, country=country, proxy_type=proxy_type, period=int(cb)).pack())
+        )
+    kb.add(InlineKeyboardButton(text=f"Назад", callback_data=ProxyCatalogCallback(level=1, country=country).pack()))
+    kb.adjust(2)
+    return kb
 
 
-rental_period = InlineKeyboardBuilder()
-rental_period.add(InlineKeyboardButton(text="1 день", callback_data="period_1"),
-                  InlineKeyboardButton(text="7 дней", callback_data="period_7"),
-                  InlineKeyboardButton(text="1 месяц", callback_data="period_30"),
-                  InlineKeyboardButton(text="6 месяцев", callback_data="period_180"),
-                  InlineKeyboardButton(text="1 год", callback_data="period_365"))
-rental_period.adjust(2)
+def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
+    unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+    kb = InlineKeyboardBuilder()
+    country = unpacked_cb.country
+    proxy_type = unpacked_cb.proxy_type
+    print(data)
 
-
-# class GlobalData:
-#     data = {}
-#
-#     @classmethod
-#     async def update_data(cls, key, value):
-#         cls.data[key] = value
+    for i in data:
+        kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=ProxyCatalogCallback(
+            level=4,
+            country=country,
+            proxy_type=proxy_type,
+            quantity=quantity,
+            price=price).pack())
+        )
+    kb.add(InlineKeyboardButton(text=f"Назад", callback_data=ProxyCatalogCallback(level=1, country=country).pack()))
+    kb.adjust(1)
+    return kb
 
 
 def proxy_quantity(quantity: int) -> InlineKeyboardBuilder:
@@ -61,3 +81,9 @@ payment_types.add(InlineKeyboardButton(text="Paymaster", callback_data="payment_
                   InlineKeyboardButton(text="USDT", callback_data="payment_usdt"))
 payment_types.adjust(2)
 
+
+def confirm_payment(pay_url: str):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Оплатить USDT", url=pay_url)]
+    ])
+    return kb

@@ -22,11 +22,7 @@ user_router = Router()
 async def start_bot(message: types.Message, session: AsyncSession):
     await message.answer("Привет👋, я ProxySellerBot🤖, и я помогу тебе выбрать необходимый для тебя прокси!",
                          reply_markup=start_kb)
-    telegram_id = message.from_user.id
-    # await UserService.create_if_not_exist(UserDTO(
-    #     telegram_username=message.from_user.username,
-    #     telegram_id=telegram_id
-    # ), session)
+
     # безопасное извлечения/валидация пользовательских данных из сессии БД перед обработкой сообщений
 
 

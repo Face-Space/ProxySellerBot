@@ -18,4 +18,5 @@ class CryptoPayClient:
         }
         resp = await self.client.post("/createInvoice", json=data)
         resp.raise_for_status()
+        # Если HTTP-код ответа не 200 (например, 400, 401, 500), выбрасывается исключение httpx.HTTPStatusError
         return resp.json()["result"]

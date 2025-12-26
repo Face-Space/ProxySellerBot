@@ -16,9 +16,6 @@ class CartRepository:
             session.add(cart)
             await session.flush()
             return CartDTO.model_validate(cart, from_attributes=True)
-            # model_validate() говорит: "Дай мне что угодно, я проверю и сделаю правильный CartDTO"
-            # Зачем from_attributes=True
-            #  Без него: "Дай словарь!" → Ошибка (cart не dict)
-            #  С ним:"Дай объект, я прочитаю его поля!" → Работает
+
         else:
             return CartDTO.model_validate(cart, from_attributes=True)

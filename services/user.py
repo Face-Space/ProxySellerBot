@@ -16,7 +16,6 @@ class UserService:
             case None:
                 user_id = await UserRepository.create(user_dto, session)
                 await CartRepository.get_or_create(user_id, session)
-                # мы почему-то создаём корзину для юзера тогда, когда пользователь нажал на /start
                 await session.commit()
             case _:
                 # update_user_dto = UserDTO(**user.model_dump())
