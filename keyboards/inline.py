@@ -55,7 +55,11 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
     proxy_type = unpacked_cb.proxy_type
     print(data)
 
-    for i in data:
+    for proxy in data:
+        proxy_name = proxy.name
+        quantity = proxy.quantity
+        price = proxy.price
+
         kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=ProxyCatalogCallback(
             level=4,
             country=country,
@@ -63,15 +67,32 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
             quantity=quantity,
             price=price).pack())
         )
-    kb.add(InlineKeyboardButton(text=f"Назад", callback_data=ProxyCatalogCallback(level=1, country=country).pack()))
+    kb.add(InlineKeyboardButton(text=f"Назад",
+                    callback_data=ProxyCatalogCallback(level=2, country=country, proxy_type=proxy_type).pack()))
     kb.adjust(1)
     return kb
 
 
-def proxy_quantity(quantity: int) -> InlineKeyboardBuilder:
+def proxy_quantity(callback: CallbackQuery) -> InlineKeyboardBuilder:
+    unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+    price = unpacked_cb.price
+    country = unpacked_cb.country
+    proxy_type = unpacked_cb.proxy_type
+    quantity = unpacked_cb.quantity
+
     kb = InlineKeyboardBuilder()
     for i in range(quantity):
-        kb.add(InlineKeyboardButton(text=f"{i+1}", callback_data=f"quantity_{i+1}"))
+        kb.add(InlineKeyboardButton(text=f"{i+1}",
+            callback_data=ProxyCatalogCallback(
+                level=5,
+                country=country,
+                proxy_type=proxy_type,
+                price=price,
+                quantity=quantity).pack()))
+
+    kb.add(InlineKeyboardButton(text=f"Назад",
+                                callback_data=ProxyCatalogCallback(level=3, country=country,
+                                                                   proxy_type=proxy_type, price=price).pack()))
     kb.adjust(2)
     return kb
 

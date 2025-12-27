@@ -19,3 +19,7 @@ class CartRepository:
 
         else:
             return CartDTO.model_validate(cart, from_attributes=True)
+
+    @staticmethod
+    async def add_to_cart(session: AsyncSession):
+        query =

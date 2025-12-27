@@ -6,6 +6,7 @@ from models.user import UserDTO, User
 
 
 class UserRepository:
+
     @staticmethod
     async def get_by_tgid(telegram_id: int, session: AsyncSession) -> UserDTO | None:
         query = select(User).where(User.telegram_id == telegram_id)
