@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.cart import Cart, CartDTO
+from models.cartItem import CartItemDTO, CartItem
 
 
 class CartRepository:
@@ -21,5 +22,11 @@ class CartRepository:
             return CartDTO.model_validate(cart, from_attributes=True)
 
     @staticmethod
-    async def add_to_cart(session: AsyncSession):
-        query =
+    async def add_to_cart(cart_item: CartItemDTO, cart: CartDTO, session: AsyncSession):
+        get_old_cart_content = select(Cart).join(
+            CartItem, Cart.id == CartItem.cart_id).where(
+            Cart.id == cart.id)
+
+
+
+
