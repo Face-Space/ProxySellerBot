@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from keyboards.inline import proxy_loc, type_proxy, rental_period, proxies_kb, proxy_quantity
 from orm_query.proxies import ProxiesRepository
+from services.cart import CartService
 from utils.callbacks import ProxyCatalogCallback
 
 proxy_catalog_router = Router()

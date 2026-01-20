@@ -1,5 +1,7 @@
 import uvicorn
-from aiogram import Dispatcher
+from aiogram import Dispatcher, Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import Update, BufferedInputFile
 from alembic import command
@@ -14,7 +16,6 @@ import traceback
 from redis.asyncio import Redis
 
 import config
-from bot_setup import bot
 from config import *
 from database.engine import create_db, session_maker
 from handlers.user.proxy_catalog2 import proxy_catalog_router
@@ -25,6 +26,8 @@ from services.notification import NotificationService
 
 # redis = Redis.from_url("redis://localhost:6379/0")
 # dp = Dispatcher(storage=RedisStorage(redis=redis))
+load_dotenv(find_dotenv())
+bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 logger = logging.getLogger(__name__)
 

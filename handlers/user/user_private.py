@@ -8,7 +8,6 @@ from aiogram.types import PreCheckoutQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import config
-from bot_setup import bot
 from keyboards.reply import start_kb
 from models.user import UserDTO
 from services.user import UserService
@@ -23,12 +22,17 @@ async def start_bot(message: types.Message, session: AsyncSession):
     await message.answer("Привет👋, я ProxySellerBot🤖, и я помогу тебе выбрать необходимый для тебя прокси!",
                          reply_markup=start_kb)
 
+    await UserService.create_if_not_exist(UserDTO(
+        telegram_username=message.from_user.username,
+        telegram_id=message.from_user.id
+    ), session)
     # безопасное извлечения/валидация пользовательских данных из сессии БД перед обработкой сообщений
 
 
 # Перед оплатой Telegram вызывает этот обработчик
 @user_router.pre_checkout_query()
-async def pre_checkout_q(pre_checkout_query: PreCheckoutQuery):
+async def pre_checkout_q(message: types.Message, pre_checkout_query: PreCheckoutQuery):
+    bot = message.bot
     try:
         await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
