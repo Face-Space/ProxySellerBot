@@ -18,7 +18,7 @@ from redis.asyncio import Redis
 import config
 from config import *
 from database.engine import create_db, session_maker
-from handlers.user.proxy_catalog2 import proxy_catalog_router
+from handlers.user.proxy_catalog import proxy_catalog_router
 from handlers.user.user_private import user_router
 from middlewares.db import DataBaseSession
 from services.notification import NotificationService

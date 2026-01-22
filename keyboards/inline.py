@@ -53,7 +53,8 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
     kb = InlineKeyboardBuilder()
     country = unpacked_cb.country
     proxy_type = unpacked_cb.proxy_type
-    print(data)
+    period = unpacked_cb.period
+    print(data[0].__dict__)
 
     for proxy in data:
         proxy_name = proxy.name
@@ -64,6 +65,7 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
             level=4,
             country=country,
             proxy_type=proxy_type,
+            period=period,
             quantity=quantity,
             price=price).pack())
         )
@@ -78,6 +80,7 @@ def proxy_quantity(callback: CallbackQuery) -> InlineKeyboardBuilder:
     price = unpacked_cb.price
     country = unpacked_cb.country
     proxy_type = unpacked_cb.proxy_type
+    period = unpacked_cb.period
     quantity = unpacked_cb.quantity
 
     kb = InlineKeyboardBuilder()
@@ -87,6 +90,7 @@ def proxy_quantity(callback: CallbackQuery) -> InlineKeyboardBuilder:
                 level=5,
                 country=country,
                 proxy_type=proxy_type,
+                period=period,
                 price=price,
                 quantity=quantity).pack()))
 

@@ -1,8 +1,10 @@
-from aiogram import types
+from aiogram import types, Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.types import BufferedInputFile
 import logging
 
-from bot_setup import bot
+import config
 from config import ADMIN_ID_LIST
 
 logger = logging.getLogger(__name__)
@@ -12,6 +14,7 @@ class NotificationService:
     @staticmethod
     async def send_to_admins(message: str | BufferedInputFile, reply_markup: types.InlineKeyboardMarkup | None):
 
+        bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
         for admin_id in ADMIN_ID_LIST:
             try:
                 if isinstance(message, str):

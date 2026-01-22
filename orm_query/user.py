@@ -13,6 +13,7 @@ class UserRepository:
         user = await session.execute(query)
         user = user.scalar()
         if user is not None:
+
             return UserDTO.model_validate(user, from_attributes=True)
             # model_validate() создаёт экземпляр модели из произвольных данных (словарь, JSON, объект),
             # проверяя их на соответствие схеме. Он автоматически преобразует типы, валидирует значения
