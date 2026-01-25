@@ -3,7 +3,7 @@ from aiogram.filters.callback_data import CallbackData
 
 class ProxyCatalogCallback(CallbackData, prefix="proxy_catalog"):
     level: int
-    # category_id: int
+    name: str | None = None
     country: str | None = None
     proxy_type: str | None = None
     period: int | None = None

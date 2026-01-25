@@ -19,9 +19,13 @@ class CartService:
 
 
         cart_item = CartItemDTO(
-            # id=unpacked_cb.id,
+            cart_id=cart.id,
+            name=unpacked_cb.name,
+            country=unpacked_cb.country,
+            proxy_type=unpacked_cb.proxy_type,
+            period_days=unpacked_cb.period,
             quantity=unpacked_cb.quantity,
-            cart_id=cart.id
+            price=unpacked_cb.price
         )
         await CartRepository.add_to_cart(cart_item, cart, session)
         await session.commit()

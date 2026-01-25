@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from sqlalchemy import Integer, String, Float, DateTime, func, Boolean, CheckConstraint
+from sqlalchemy import Integer, String, Float, DateTime, func, Boolean, CheckConstraint, BigInteger
 from sqlalchemy.orm import mapped_column, Mapped
 
 from models.base import Base
@@ -11,11 +11,11 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_username: Mapped[int] = mapped_column(String, unique=True)
-    telegram_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
+    telegram_username: Mapped[str] = mapped_column(String, unique=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
     top_up_amount: Mapped[int] = mapped_column(Float, default=0.0)
     consume_records: Mapped[int] = mapped_column(Float, default=0.0)
-    registered_at: Mapped[int] = mapped_column(DateTime, default=func.now())
+    registered_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     can_receive_messages: Mapped[int] = mapped_column(Boolean, default=True)
 
     __table_args__ = (

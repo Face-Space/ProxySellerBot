@@ -9,8 +9,7 @@ class Proxies(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     proxy_type: Mapped[str] = mapped_column(String(10), nullable=False)
-    country: Mapped[str] = mapped_column(String(15), nullable=False)
-    period_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    country: Mapped[str] = mapped_column(String(30), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
 

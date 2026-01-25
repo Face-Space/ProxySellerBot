@@ -64,9 +64,7 @@ async def get_quantity(**kwargs):
 async def add_to_cart(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
-    print("начало add_to_cart")
     await CartService.add_to_cart(callback, session)
-    print("конец add_to_cart")
     await callback.message.edit_text("Товар добавлен в корзину")
 
 

@@ -13,12 +13,10 @@ class ProxiesRepository:
         unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
         country = unpacked_cb.country
         proxy_type = unpacked_cb.proxy_type
-        period_days = unpacked_cb.period
 
         query = select(Proxies).where(
             Proxies.country == country,
-                        Proxies.proxy_type == proxy_type,
-                        Proxies.period_days == period_days
+            Proxies.proxy_type == proxy_type,
         )
         result = await session.execute(query)
         return result.scalars().all()

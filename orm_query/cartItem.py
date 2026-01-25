@@ -15,5 +15,9 @@ class CartItemRepository:
         return cart_item.id
 
     @staticmethod
-    async def get_by_user_id(user_id: int, page: int, session: AsyncSession) -> list[CartItemDTO]:
-        query = select(CartItem).join(Cart, CartItem.cart_id == Cart.id).where(Cart.user_id == user_id)
+    async def get_by_user_id(user_id: int, page: int, session: AsyncSession, page_entries = 8) -> list[CartItemDTO]:
+        query = select(CartItem).join(Cart, CartItem.cart_id == Cart.id).where(Cart.user_id == user_id).limit(
+        page_entries).offset(page_entries * page)
+        cart_items = await session.execute(query)
+        return [CartItemDTO.model_validate(cart_item, from_attributes=True) for cart_item in
+                cart_items.scalars().all()]

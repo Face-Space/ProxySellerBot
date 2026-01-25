@@ -168,12 +168,13 @@ async def main():
         dp.shutdown.register(_on_shutdown)
         dp.update.middleware(DataBaseSession(session_pool=session_maker))
 
-        await init_db()
+        # await init_db()
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
     except Exception as e:
         print(f"Ошибка запуска бота: {e}")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

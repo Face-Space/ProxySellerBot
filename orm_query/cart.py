@@ -35,6 +35,11 @@ class CartRepository:
 
         elif old_cart_records is not None:
             quantity_update = (update(CartItem).where(CartItem.cart_id == cart.id)
-                               .values(quantity=CartItem.quantity + cart_item.quantity))
+                               .values(name=CartItem.name,
+                                       proxy_type=CartItem.proxy_type,
+                                       country=CartItem.country,
+                                       period_days=CartItem.period_days,
+                                       quantity=CartItem.quantity + cart_item.quantity,
+                                       price=CartItem.price))
             await session.execute(quantity_update)
 

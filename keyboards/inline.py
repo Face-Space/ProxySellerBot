@@ -54,7 +54,6 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
     country = unpacked_cb.country
     proxy_type = unpacked_cb.proxy_type
     period = unpacked_cb.period
-    print(data[0].__dict__)
 
     for proxy in data:
         proxy_name = proxy.name
@@ -63,6 +62,7 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
 
         kb.add(InlineKeyboardButton(text=f"{proxy_name}", callback_data=ProxyCatalogCallback(
             level=4,
+            name=proxy_name,
             country=country,
             proxy_type=proxy_type,
             period=period,
@@ -77,6 +77,7 @@ def proxies_kb(callback: CallbackQuery, data: dict) -> InlineKeyboardBuilder:
 
 def proxy_quantity(callback: CallbackQuery) -> InlineKeyboardBuilder:
     unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
+    name = unpacked_cb.name
     price = unpacked_cb.price
     country = unpacked_cb.country
     proxy_type = unpacked_cb.proxy_type
@@ -88,11 +89,12 @@ def proxy_quantity(callback: CallbackQuery) -> InlineKeyboardBuilder:
         kb.add(InlineKeyboardButton(text=f"{i+1}",
             callback_data=ProxyCatalogCallback(
                 level=5,
+                name=name,
                 country=country,
                 proxy_type=proxy_type,
                 period=period,
                 price=price,
-                quantity=quantity).pack()))
+                quantity=i+1).pack()))
 
     kb.add(InlineKeyboardButton(text=f"Назад",
                                 callback_data=ProxyCatalogCallback(level=3, country=country,
