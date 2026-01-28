@@ -2,9 +2,10 @@ from aiogram import Router, F, types
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from keyboards.inline import proxy_loc, type_proxy, rental_period, proxies_kb, proxy_quantity
+# from keyboards.inline import proxy_loc, type_proxy, rental_period, proxies_kb, proxy_quantity
 from orm_query.proxies import ProxiesRepository
 from services.cart import CartService
+from services.country import CountryService
 from utils.callbacks import ProxyCatalogCallback
 
 proxy_catalog_router = Router()
@@ -19,16 +20,21 @@ async def countries(**kwargs):
     message = kwargs.get("callback")
     session = kwargs.get("session")
     if isinstance(message, types.Message):
-        await message.answer("Вот каталог всех прокси📦 по странам", reply_markup=proxy_loc.as_markup())
+        msg, kb_builder = await CountryService.get_buttons(session)
+        await message.answer(msg, reply_markup=kb_builder.as_markup())
 
     elif isinstance(message, CallbackQuery):
         callback = message
-        await callback.message.edit_text("Вот каталог всех прокси📦 по странам", reply_markup=proxy_loc.as_markup())
+        msg, kb_builder = await CountryService.get_buttons(session, callback)
+        await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
-async def proxy_type(**kwargs):
+async def show_proxy_type(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
+    msg, kb_builder = await ProxyTypeService.get_buttons(session, callback)
+
+
     await callback.message.edit_text("Выберите интересующий вас тип прокси:", reply_markup=type_proxy(callback).as_markup())
 
 
@@ -74,7 +80,7 @@ async def navigate_categories(callback: CallbackQuery, callback_data: ProxyCatal
 
     levels = {
         0: countries,
-        1: proxy_type,
+        1: show_proxy_type,
         2: period,
         3: get_proxy,
         4: get_quantity,

@@ -17,3 +17,4 @@ ADMIN_ID_LIST = [int(admin_id) for admin_id in ADMIN_ID_LIST_RAW]
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 REDIS_HOST = os.environ.get("REDIS_HOST")
 CRYPTO_PAY_TOKEN = os.environ.get("CRYPTO_PAY_TOKEN")
+PAGE_ENTRIES = int(os.environ.get("PAGE_ENTRIES"))
