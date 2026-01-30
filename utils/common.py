@@ -1,18 +1,20 @@
 from aiogram import types
+from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 async def add_pagination_buttons(keyboard_builder: InlineKeyboardBuilder, unpacked_cb, max_page_function,
                                  back_button) -> InlineKeyboardBuilder:
     maximum_page = await max_page_function
-    buttons = []
+    buttons: list[InlineKeyboardButton] = []
+
     if unpacked_cb.page > 0:
         back_page_callback = unpacked_cb.__copy__()
         back_page_callback.page -= 1
         first_page_callback = unpacked_cb.__copy__()
         first_page_callback.page = 0
 
-        buttons.append(types.InlineKeyboardButton(text="⏪ В начало", calback_data=first_page_callback.pack()))
+        buttons.append(types.InlineKeyboardButton(text="⏪ В начало", callback_data=first_page_callback.pack()))
         buttons.append(types.InlineKeyboardButton(text="⬅️ Пред.", callback_data=back_page_callback.pack()))
 
 

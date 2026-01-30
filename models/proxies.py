@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from sqlalchemy import func, DateTime, String, Integer, Float, Numeric, ForeignKey, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from models.base import Base
@@ -14,3 +15,12 @@ class Proxies(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     # is_sold: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class ProxyDTO(BaseModel):
+    id: int | None = None
+    country_id: int | None = None
+    name: str | None = None
+    proxy_type_id: int | None = None
+    quantity: int | None = None
+    price: float | None = None

@@ -39,6 +39,11 @@ class CountryRepository:
         else:
             return math.trunc(max_page / config.PAGE_ENTRIES)
 
+    @staticmethod
+    async def get_by_id(country_id: int, session: AsyncSession):
+        query = select(Country).where(Country.id == country_id)
+        country = await session.execute(query)
+        return CountryDTO.model_validate(country.scalar(), from_attributes=True)
 
 
 

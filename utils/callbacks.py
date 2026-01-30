@@ -17,6 +17,7 @@ class BaseCallback(CallbackData, prefix="base"):
 
 class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
     country_id: int
+    proxy_type_id: int
     period: int
     quantity: int
     price: float
@@ -26,12 +27,13 @@ class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
     @staticmethod
     def create(level: int,
                country_id: int = -1,
+               proxy_type_id: int = -1,
                period: int = 0,
                quantity: int = 0,
                price: float = 0.0,
                confirmation: bool = False,
                page: int = 0) -> 'ProxyCatalogCallback':
-        return ProxyCatalogCallback(level=level, country_id=country_id, period=period, quantity=quantity, price=price,
+        return ProxyCatalogCallback(level=level, country_id=country_id, proxy_type_id=proxy_type_id, period=period, quantity=quantity, price=price,
                                     confirmation=confirmation, page=page)
 
 

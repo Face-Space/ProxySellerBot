@@ -4,8 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # from keyboards.inline import proxy_loc, type_proxy, rental_period, proxies_kb, proxy_quantity
 from orm_query.proxies import ProxiesRepository
-from services.cart import CartService
+# from services.cart import CartService
 from services.country import CountryService
+from services.proxy_type import ProxyTypeService
 from utils.callbacks import ProxyCatalogCallback
 
 proxy_catalog_router = Router()
@@ -32,15 +33,21 @@ async def countries(**kwargs):
 async def show_proxy_type(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
-    msg, kb_builder = await ProxyTypeService.get_buttons(session, callback)
+    msg, kb_builder = await ProxyTypeService.get_buttons(callback, session)
+    await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
-    await callback.message.edit_text("Выберите интересующий вас тип прокси:", reply_markup=type_proxy(callback).as_markup())
+async def select_quantity(**kwargs):
+    callback = kwargs.get("callback")
+    session = kwargs.get("session")
+    msg, kb_builder = await ProxyTypeService.get_select_quantity_buttons(callback, session)
+    await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
 async def period(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
+
     await callback.message.edit_text("Отлично, теперь укажите желаемый срок аренды прокси:",
                                      reply_markup=rental_period(callback).as_markup())
 
