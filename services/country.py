@@ -18,7 +18,7 @@ class CountryService:
 
         countries = await CountryRepository.get(unpacked_cb.page, session)
         country_builder = InlineKeyboardBuilder()
-        [country_builder.button(text=country.country_name,
+        [country_builder.button(text=f"{country.country_name}{country.country_flag}",
             callback_data=ProxyCatalogCallback.create(level=1, country_id=country.id)) for country in countries]
         country_builder.adjust(2)
         country_builder = await add_pagination_buttons(country_builder, unpacked_cb,

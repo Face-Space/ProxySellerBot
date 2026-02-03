@@ -16,9 +16,10 @@ class BaseCallback(CallbackData, prefix="base"):
 
 
 class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
+    proxy_name: str | None
     country_id: int
     proxy_type_id: int
-    period: int
+    period: str | None
     quantity: int
     price: float
     confirmation: bool
@@ -28,16 +29,15 @@ class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
     def create(level: int,
                country_id: int = -1,
                proxy_type_id: int = -1,
-               period: int = 0,
+               period: str = None,
                quantity: int = 0,
                price: float = 0.0,
+               proxy_name: str = None,
                confirmation: bool = False,
                page: int = 0) -> 'ProxyCatalogCallback':
-        return ProxyCatalogCallback(level=level, country_id=country_id, proxy_type_id=proxy_type_id, period=period, quantity=quantity, price=price,
+        return ProxyCatalogCallback(level=level, country_id=country_id, proxy_type_id=proxy_type_id, period=period,
+                                    quantity=quantity, price=price, proxy_name=proxy_name,
                                     confirmation=confirmation, page=page)
-
-
-
 
 class CartCallback(BaseCallback, prefix="cart"):
     page: int

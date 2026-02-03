@@ -15,7 +15,7 @@ class User(Base):
     telegram_id: Mapped[int] = mapped_column(BigInteger, nullable=False, unique=True)
     top_up_amount: Mapped[int] = mapped_column(Float, default=0.0)
     consume_records: Mapped[int] = mapped_column(Float, default=0.0)
-    registered_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    registered_at: Mapped[datetime] = mapped_column(DateTime, default=func.date_trunc('second', func.now()))
     can_receive_messages: Mapped[int] = mapped_column(Boolean, default=True)
 
     __table_args__ = (

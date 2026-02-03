@@ -14,7 +14,6 @@ class Proxies(Base):
     proxy_type_id: Mapped[int] = mapped_column(Integer, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-    # is_sold: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 class ProxyDTO(BaseModel):

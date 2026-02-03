@@ -1,12 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
-
-# from keyboards.inline import proxy_loc, type_proxy, rental_period, proxies_kb, proxy_quantity
-from orm_query.proxies import ProxiesRepository
-# from services.cart import CartService
 from services.country import CountryService
-from services.proxy_type import ProxyTypeService
+from services.proxy_type import ProxyService
 from utils.callbacks import ProxyCatalogCallback
 
 proxy_catalog_router = Router()
@@ -33,45 +29,38 @@ async def countries(**kwargs):
 async def show_proxy_type(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
-    msg, kb_builder = await ProxyTypeService.get_buttons(callback, session)
+    msg, kb_builder = await ProxyService.get_buttons(callback, session)
+    await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
+
+
+async def show_proxies(**kwargs):
+    callback = kwargs.get("callback")
+    session = kwargs.get("session")
+    msg, kb_builder = await ProxyService.show_filtered_proxies(callback, session)
     await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
 async def select_quantity(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
-    msg, kb_builder = await ProxyTypeService.get_select_quantity_buttons(callback, session)
+    msg, kb_builder = await ProxyService.get_select_quantity_buttons(callback, session)
     await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
-async def period(**kwargs):
+async def select_period(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
+    msg, kb_builder = await ProxyService.get_select_period_buttons(callback, session)
+    await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
-    await callback.message.edit_text("Отлично, теперь укажите желаемый срок аренды прокси:",
-                                     reply_markup=rental_period(callback).as_markup())
 
-
-async def get_proxy(**kwargs):
+async def add_to_cart_confirmation(**kwargs):
     callback = kwargs.get("callback")
     session = kwargs.get("session")
-
-    db_data = await ProxiesRepository.get_proxy(callback, session)
-
-    if db_data is None:
-        await callback.message.edit_text('Извините, прокси под ваши запросы не найдены. '
-                                      'Нажмите "Каталог прокси" чтобы найти что-нибудь другое')
-
-    else:
-        await callback.message.edit_text("Вот все доступные прокси под ваши параметры:",
-                                      reply_markup=proxies_kb(callback, db_data).as_markup())
+    msg, kb_builder = await ProxyService.get_add_to_cart_buttons(callback, session)
+    await callback.message.edit_text(text=msg, reply_markup=kb_builder.as_markup())
 
 
-async def get_quantity(**kwargs):
-    callback = kwargs.get("callback")
-    session = kwargs.get("session")
-    await callback.message.edit_text("Теперь выберите необходимое количество прокси из доступно возможных",
-                                     reply_markup=proxy_quantity(callback).as_markup())
 
 
 async def add_to_cart(**kwargs):
@@ -88,10 +77,11 @@ async def navigate_categories(callback: CallbackQuery, callback_data: ProxyCatal
     levels = {
         0: countries,
         1: show_proxy_type,
-        2: period,
-        3: get_proxy,
-        4: get_quantity,
-        5: add_to_cart
+        2: show_proxies,
+        3: select_quantity,
+        4: select_period,
+        5: add_to_cart_confirmation,
+        6: add_to_cart
     }
 
     current_level_function = levels[current_level]
