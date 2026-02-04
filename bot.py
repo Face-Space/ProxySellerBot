@@ -18,6 +18,7 @@ from redis.asyncio import Redis
 import config
 from config import *
 from database.engine import create_db, session_maker
+from handlers.user.cart import cart_router
 from handlers.user.proxy_catalog import proxy_catalog_router
 from handlers.user.user_private import user_router
 from middlewares.db import DataBaseSession
@@ -141,6 +142,7 @@ logger = logging.getLogger(__name__)
 
 dp.include_router(proxy_catalog_router)
 dp.include_routers(user_router)
+dp.include_router(cart_router)
 
 
 async def _on_startup():

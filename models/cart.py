@@ -1,4 +1,4 @@
-# cart is a container for unsold items to collect items from different (sub-)categories
+# cart is a container for unsold items to collect items from different countries (proxy_types)
 # to be able to checkout this cart at once together with a shipment fee. Only the
 # quantity, category, subcategory is stored because the unique item is not yet sold
 #

@@ -1,6 +1,8 @@
 from aiogram import Router, F, types
 from aiogram.types import CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from services.cart import CartService
 from services.country import CountryService
 from services.proxy_type import ProxyService
 from utils.callbacks import ProxyCatalogCallback
@@ -59,8 +61,6 @@ async def add_to_cart_confirmation(**kwargs):
     session = kwargs.get("session")
     msg, kb_builder = await ProxyService.get_add_to_cart_buttons(callback, session)
     await callback.message.edit_text(text=msg, reply_markup=kb_builder.as_markup())
-
-
 
 
 async def add_to_cart(**kwargs):

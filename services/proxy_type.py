@@ -2,7 +2,6 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.proxies import ProxyDTO
 from orm_query.country import CountryRepository
 from orm_query.period import PeriodRepository
 from orm_query.proxies import ProxiesRepository
@@ -24,8 +23,8 @@ class ProxyService:
                 proxy_type=proxy_type.proxy_type),
                 callback_data=ProxyCatalogCallback.create(
                 unpacked_cb.level + 1,
-                unpacked_cb.country_id,
-                proxy_type.id
+                country_id=unpacked_cb.country_id,
+                proxy_type_id=proxy_type.id
             ))
         kb_builder.adjust(1)
         kb_builder = await add_pagination_buttons(kb_builder, unpacked_cb,
@@ -45,9 +44,9 @@ class ProxyService:
             kb_builder.button(text=f"📦 {proxy.name}| Цена: {proxy.price:.2f} руб. за 1шт.",
                               callback_data=ProxyCatalogCallback.create(
                                   unpacked_cb.level + 1,
+                                  proxy.name,
                                   unpacked_cb.country_id,
-                                  proxy.proxy_type_id,
-                                  proxy_name=proxy.name
+                                  proxy.proxy_type_id
                               ))
         kb_builder.adjust(1)
         kb_builder.row(unpacked_cb.get_back_button())
@@ -83,9 +82,9 @@ class ProxyService:
         for i in range(available_qty):
             kb_builder.button(text=str(i+1), callback_data=ProxyCatalogCallback.create(
                 unpacked_cb.level + 1,
+                unpacked_cb.proxy_name,
                 proxy.country_id,
                 proxy.proxy_type_id,
-                proxy_name=unpacked_cb.proxy_name,
                 quantity=i+1
             ))
         kb_builder.adjust(3)
@@ -110,15 +109,15 @@ class ProxyService:
         [kb_builder.button(text=f"{str(period.period_days)}",
                            callback_data=ProxyCatalogCallback.create(
                                unpacked_cb.level + 1,
+                               unpacked_cb.proxy_name,
                                proxy.country_id,
                                proxy.proxy_type_id,
                                quantity=unpacked_cb.quantity,
-                               proxy_name=unpacked_cb.proxy_name,
                                period=period.period_days)) for period in periods]
 
         kb_builder.adjust(2)
         kb_builder.row(unpacked_cb.get_back_button())
-        return "Выберите период на который вы хотите арендовать прокси:", kb_builder
+        return "🕐 Выберите период на который вы хотите арендовать прокси:", kb_builder
 
 
     @staticmethod
@@ -135,8 +134,8 @@ class ProxyService:
             return "Извините, но этот прокси уже был продан😔", kb_builder
 
         message_text = ("🛒 <b>Название прокси: {proxy_name} Страна: {country_name}{flag}\nТип прокси: {proxy_type}"
-                        "\nЦена: {price:.2f} {currency_sym}\nВыбранное количество прокси: {quantity}\n"
-                        "💰 Итоговая сумма: {total_price.2f} {currency_sym}</b>").format(
+                        "\nЦена: {price} {currency_sym}\nВыбранное количество прокси: {quantity}\n"
+                        "💰 Итоговая сумма: {total_price} {currency_sym}</b>").format(
             proxy_name=proxy.name,
             country_name=country.country_name,
             flag=country.country_flag,
@@ -149,16 +148,17 @@ class ProxyService:
         kb_builder.button(text="✅ Подтвердить",
                           callback_data=ProxyCatalogCallback.create(
                               unpacked_cb.level + 1,
+                              unpacked_cb.proxy_name,
                               unpacked_cb.country_id,
                               unpacked_cb.proxy_type_id,
                               unpacked_cb.period,
-                              quantity=unpacked_cb.quantity,
+                              unpacked_cb.quantity,
                               confirmation=True
                           ))
         kb_builder.button(text="❌ Отмена",
                           callback_data=ProxyCatalogCallback.create(
                               1,
-                              unpacked_cb.country_id
+                              country_id=unpacked_cb.country_id
                           ))
         kb_builder.row(unpacked_cb.get_back_button())
         return message_text, kb_builder

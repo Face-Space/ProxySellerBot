@@ -36,8 +36,8 @@ class CartRepository:
         elif old_cart_records is not None:
             quantity_update = (update(CartItem).where(CartItem.cart_id == cart.id)
                                .values(name=CartItem.name,
-                                       proxy_type=CartItem.proxy_type,
-                                       country=CartItem.country,
+                                       proxy_type_id=CartItem.proxy_type_id,
+                                       country_id=CartItem.country_id,
                                        period_days=CartItem.period_days,
                                        quantity=CartItem.quantity + cart_item.quantity,
                                        price=CartItem.price))

@@ -20,6 +20,9 @@ async def show_cart(**kwargs):
     if isinstance(message, types.Message):
         await message.answer(msg, reply_markup=kb_builder.as_markup())
 
+    elif isinstance(message, types.Message):
+        callback = message
+        await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
 
 @cart_router.callback_query(CartCallback.filter())
