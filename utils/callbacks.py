@@ -46,6 +46,10 @@ class CartCallback(BaseCallback, prefix="cart"):
     cart_item_id: int
     confirmation: bool
 
+    @staticmethod
+    def create(level: int = 0, page: int = 0, cart_id: int = -1, cart_item_id: int = -1, confirmation=False):
+        return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id,
+                            confirmation=confirmation)
 
 
 

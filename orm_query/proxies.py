@@ -42,3 +42,13 @@ class ProxiesRepository:
         return available_qty.scalar()
 
 
+    @staticmethod
+    async def get_price(proxy_dto: ProxyDTO, session: AsyncSession) -> float:
+        query = (select(Proxies.price)
+                 .where(Proxies.country_id == proxy_dto.country_id,
+                        Proxies.name == proxy_dto.name,
+                        Proxies.proxy_type_id == proxy_dto.proxy_type_id))
+        price = await session.execute(query)
+        return price.scalar()
+
+

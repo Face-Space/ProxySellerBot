@@ -141,8 +141,9 @@ logger = logging.getLogger(__name__)
 
 
 dp.include_router(proxy_catalog_router)
-dp.include_routers(user_router)
 dp.include_router(cart_router)
+dp.include_routers(user_router)
+
 
 
 async def _on_startup():
