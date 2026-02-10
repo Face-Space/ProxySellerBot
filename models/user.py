@@ -2,9 +2,10 @@ from datetime import datetime
 
 from pydantic import BaseModel
 from sqlalchemy import Integer, String, Float, DateTime, func, Boolean, CheckConstraint, BigInteger
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from models.base import Base
+from models.buy import Buy
 
 
 class User(Base):
@@ -17,6 +18,7 @@ class User(Base):
     consume_records: Mapped[int] = mapped_column(Float, default=0.0)
     registered_at: Mapped[datetime] = mapped_column(DateTime, default=func.date_trunc('second', func.now()))
     can_receive_messages: Mapped[int] = mapped_column(Boolean, default=True)
+    buys: Mapped[list["Buy"]] = relationship(back_populates="buyer")
 
     __table_args__ = (
         CheckConstraint('top_up_amount >= 0', name='check_top_up_amount_positive'),

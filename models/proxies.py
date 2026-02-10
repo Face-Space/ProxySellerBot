@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from sqlalchemy import func, DateTime, String, Integer, Float, Numeric, ForeignKey, Boolean
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from models.base import Base
+from models.buyProxy import BuyProxy
 
 
 class Proxies(Base):
@@ -14,6 +15,7 @@ class Proxies(Base):
     proxy_type_id: Mapped[int] = mapped_column(Integer, nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    proxies: Mapped[list["BuyProxy"]] = relationship(back_populates="proxy", cascade="all, delete-orphan")
 
 
 class ProxyDTO(BaseModel):

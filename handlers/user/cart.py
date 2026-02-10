@@ -39,6 +39,15 @@ async def checkout_processing(**kwargs):
     await callback.message.edit_text(text=msg, reply_markup=kb_builder.as_markup())
 
 
+async def buy_processing(**kwargs):
+    callback = kwargs.get("callback")
+    session = kwargs.get("session")
+    await callback.message.edit_reply_markup() # Блокируем старые кнопки т.к. мб код ниже будет совершаться долго
+    # перед тем как дойдёт до edit_text()
+    msg, kb_builder = await CartService.buy_processing(callback, session)
+    await callback.message.edit_text(text=msg, reply_markup=kb_builder.as_markup())
+
+
 @cart_router.callback_query(CartCallback.filter())
 async def navigate_cart_progress(callback: CallbackQuery, callback_data: CartCallback, session: AsyncSession):
     current_level = callback_data.level

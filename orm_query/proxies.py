@@ -52,3 +52,15 @@ class ProxiesRepository:
         return price.scalar()
 
 
+    @staticmethod
+    async def get_purchased_proxies(country_id: int, proxy_type_id: int, quantity: int, name: str, session: AsyncSession) -> list[ProxyDTO]:
+        query = (select(Proxies)
+        .where(Proxies.country_id == country_id,
+               Proxies.proxy_type_id == proxy_type_id,
+               Proxies.name == name,
+               Proxies.quantity != 0).limit(quantity))
+        proxies = await session.execute(query)
+        return [ProxyDTO.model_validate(proxy, from_attributes=True) for proxy in proxies.scalars().all()]
+
+
+
