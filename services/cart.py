@@ -14,6 +14,7 @@ from orm_query.cartItem import CartItemRepository
 from orm_query.proxies import ProxiesRepository
 from orm_query.proxy_type import ProxyTypeRepository
 from orm_query.user import UserRepository
+from services.notification import NotificationService
 from utils.callbacks import ProxyCatalogCallback, CartCallback
 from utils.common import add_pagination_buttons
 
@@ -155,14 +156,25 @@ class CartService:
                 await BuyProxyRepository.create_many(buy_proxy_dto_list, session)
                 # for proxy in purchased_proxies:
                 #     proxy.is_sold = True
-
-
-
-
-
-
-
-
+                # await ProxiesRepository.update(purchased_proxies, session)
+                await CartItemRepository.remove_from_cart(cart_item.id, session)
+                sold_items.append(cart_item)
+                # msg += MessageService.create_message_with_bought_items(purchased_items)
+            user.consume_records = user.consume_records + cart_total
+            await UserRepository.update(user, session)
+            await session.commit()
+            await NotificationService.new_buy(sold_items, user, session)
+            return msg, kb_builder
+        elif unpacked_cb.confirmation is False:
+            kb_builder.row(unpacked_cb.get_back_button(0))
+            return "❌ Оплата заказа отменена", kb_builder
+        elif is_enough_money is False:
+            kb_builder.row(unpacked_cb.get_back_button(0))
+            return "У вас недостаточно средств для оформления заказа 😔", kb_builder
+        elif len(out_of_stock) > 0:
+            kb_builder.row(unpacked_cb.get_back_button(0))
+            msg = "\u26A0\uFE0F<b>Текущий прокси уже распродан либо его недостаточное количество:</b>\n\n"
+            return msg, kb_builder
 
 
 

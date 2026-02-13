@@ -1,5 +1,5 @@
 from aiogram.types import CallbackQuery
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import Proxies
@@ -61,6 +61,13 @@ class ProxiesRepository:
                Proxies.quantity != 0).limit(quantity))
         proxies = await session.execute(query)
         return [ProxyDTO.model_validate(proxy, from_attributes=True) for proxy in proxies.scalars().all()]
+
+
+    @staticmethod
+    async def update(proxy_dto_list: list[ProxyDTO], session: AsyncSession):
+        for proxy in proxy_dto_list:
+            query = update(Proxies).where(Proxies.id == proxy.id).values(**proxy.model_dump())
+            await session.execute(query)
 
 
 
