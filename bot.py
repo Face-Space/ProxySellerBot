@@ -166,7 +166,7 @@ async def init_db():
 async def main():
     try:
         logger.info("Запуск телеграм бота")
-
+        # setup_logging()
         dp.startup.register(_on_startup)
         dp.shutdown.register(_on_shutdown)
         dp.update.middleware(DataBaseSession(session_pool=session_maker))
@@ -178,6 +178,9 @@ async def main():
     except Exception as e:
         print(f"Ошибка запуска бота: {e}")
         traceback.print_exc()
+
+    finally:
+        await bot.session.close()
 
 
 if __name__ == "__main__":

@@ -80,7 +80,7 @@ class CartService:
             kb_builder.button(text="✅ Подтвердить",
                               callback_data=CartCallback.create(1, cart_item_id=cart_item_id, confirmation=True))
             kb_builder.button(text="❌ Отмена", callback_data=CartCallback.create(0))
-            return "Удалить товар из корзины?", kb_builder
+            return "Удалить товар из корзины?         ", kb_builder
 
 
     @staticmethod
@@ -93,11 +93,11 @@ class CartService:
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name, proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
             proxy_type = await ProxyTypeRepository.get_by_id(cart_item.proxy_type_id, session)
-            line_proxy_total = price * cart_item.quantity
-            cart_line_item = ("\uD83D\uDCE6 {proxy_name} | {proxy_type} | Цена: {total_price:.2f} руб. |"
-                              " Количество: {qty} \uD83D\uDDD1 \n").format(
+            line_proxy_total = float(price) * float(cart_item.quantity)
+            cart_line_item = ("📦 {proxy_name} | {proxy_type} | Цена: {price:.2f} руб. |"
+                              " Количество: {qty} 📑 \n").format(
                 proxy_name=cart_item.name, proxy_type=proxy_type.proxy_type, qty=cart_item.quantity,
-                total_price=line_proxy_total
+                price=price
             )
             cart_grand_total += line_proxy_total
             message_text += cart_line_item
@@ -105,7 +105,6 @@ class CartService:
             cart_grand_total=cart_grand_total
         )
         message_text += "</b>"
-        print(message_text)
         return message_text
 
 
@@ -131,7 +130,7 @@ class CartService:
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name,
                                  proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
-            cart_total += price * cart_item.quantity
+            cart_total += float(price) * float(cart_item.quantity)
             is_in_stock = await ProxiesRepository.get_available_qty(proxy_dto, session) >= cart_item.quantity
             if is_in_stock is False:
                 out_of_stock.append(cart_item)
@@ -144,7 +143,7 @@ class CartService:
         kb_builder = InlineKeyboardBuilder()
         if unpacked_cb.confirmation and len(out_of_stock) == 0 and is_enough_money:
             sold_items = []
-            msg = ""
+            msg = "Оплата прошла успешно, спасибо за покупку😉"
             for cart_item in cart_items:
                 price = await ProxiesRepository.get_price(ProxyDTO(country_id=cart_item.country_id,
                                         name=cart_item.name, proxy_type_id=cart_item.proxy_type_id), session)
@@ -154,12 +153,11 @@ class CartService:
                 buy_id = await BuyRepository.create(buy_dto, session)
                 buy_proxy_dto_list = [BuyProxyDTO(proxy_id=proxy.id, buy_id=buy_id) for proxy in purchased_proxies]
                 await BuyProxyRepository.create_many(buy_proxy_dto_list, session)
-                # for proxy in purchased_proxies:
-                #     proxy.is_sold = True
-                # await ProxiesRepository.update(purchased_proxies, session)
+                for proxy in purchased_proxies:
+                    proxy.quantity -= cart_item.quantity
+                await ProxiesRepository.update(purchased_proxies, session)
                 await CartItemRepository.remove_from_cart(cart_item.id, session)
                 sold_items.append(cart_item)
-                # msg += MessageService.create_message_with_bought_items(purchased_items)
             user.consume_records = user.consume_records + cart_total
             await UserRepository.update(user, session)
             await session.commit()

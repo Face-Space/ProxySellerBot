@@ -51,7 +51,7 @@ class NotificationService:
                                                     name=proxy.name, proxy_type_id=proxy.proxy_type_id), session)
             country = await CountryRepository.get_by_id(proxy.country_id, session)
             proxy_type_id = await ProxyTypeRepository.get_by_id(proxy.proxy_type_id, session)
-            cart_item_total = price * proxy.quantity
+            cart_item_total = float(price) * float(proxy.quantity)
             cart_grand_total += cart_item_total
             if user.telegram_username:
                 message += ("🛒 Новая покупка пользователя @{username} на сумму {total_price:.2f} руб. \n"
