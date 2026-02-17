@@ -30,15 +30,15 @@ class NotificationService:
 
     @staticmethod
     async def send_to_admins(message: str | BufferedInputFile, reply_markup: types.InlineKeyboardMarkup | None):
-        bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-        for admin_id in ADMIN_ID_LIST:
-            try:
-                if isinstance(message, str):
-                    await bot.send_message(admin_id, f"<b>{message}</b>", reply_markup=reply_markup)
-                else:
-                    await bot.send_document(admin_id, message, reply_markup=reply_markup)
-            except Exception as e:
-                logger.error(e)
+        async with Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML)) as bot:
+            for admin_id in ADMIN_ID_LIST:
+                try:
+                    if isinstance(message, str):
+                        await bot.send_message(admin_id, f"<b>{message}</b>", reply_markup=reply_markup)
+                    else:
+                        await bot.send_document(admin_id, message, reply_markup=reply_markup)
+                except Exception as e:
+                    logger.error(e)
 
 
     @staticmethod

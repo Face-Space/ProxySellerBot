@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy import Integer, ForeignKey, String, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
 
@@ -16,6 +16,8 @@ class CartItem(Base):
     period_days: Mapped[str] = mapped_column(String)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10,2), nullable=False)
+
+    cart: Mapped["Cart"] = relationship("Cart", back_populates="cart_items")
 
 
 class CartItemDTO(BaseModel):

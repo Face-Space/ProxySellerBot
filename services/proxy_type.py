@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta
+
 from aiogram.types import CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from dateutil.relativedelta import relativedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm_query.country import CountryRepository
@@ -121,6 +124,23 @@ class ProxyService:
 
 
     @staticmethod
+    async def calculate_days(str_days: str) -> int:
+
+        start_date = datetime.now().replace(second=0, microsecond=0)
+
+        periods = {
+            "1 день": start_date + timedelta(days=1),
+            "7 дней": start_date + timedelta(days=7),
+            "1 месяц": start_date + relativedelta(months=1),
+            "6 месяцев": start_date + relativedelta(months=6),
+            "1 год": start_date + relativedelta(years=1)
+        }
+
+        chosen_period = periods[str_days] - start_date
+        return chosen_period.days
+
+
+    @staticmethod
     async def get_add_to_cart_buttons(callback: CallbackQuery, session: AsyncSession) -> tuple[str, InlineKeyboardBuilder]:
         unpacked_cb = ProxyCatalogCallback.unpack(callback.data)
         proxy = await ProxiesRepository.get_single(unpacked_cb.country_id, unpacked_cb.proxy_type_id,
@@ -133,17 +153,19 @@ class ProxyService:
         if available_qty is None:
             return "Извините, но этот прокси уже был продан😔", kb_builder
 
+        days_count = await ProxyService.calculate_days(unpacked_cb.period)
         message_text = ("🛒 <b>Название прокси: {proxy_name} Страна: {country_name}{flag}\nТип прокси: {proxy_type}"
-                        "\nЦена: {price} {currency_sym}\nВыбранное количество прокси: {quantity}\n"
-                        "💰 Итоговая сумма: {total_price} {currency_sym}</b>").format(
+                        "\nЦена: {price} руб. за 1шт./день\nВыбранное количество прокси: {quantity}\n"
+                        "Выбранный период: {period}\n"
+                        "💰 Итоговая сумма: {total_price} руб.</b>").format(
             proxy_name=proxy.name,
             country_name=country.country_name,
             flag=country.country_flag,
             proxy_type=proxy_type.proxy_type,
             price=proxy.price,
             quantity=unpacked_cb.quantity,
-            total_price=proxy.price * unpacked_cb.quantity,
-            currency_sym="руб."
+            period=unpacked_cb.period,
+            total_price=proxy.price * unpacked_cb.quantity * days_count,
         )
         kb_builder.button(text="✅ Подтвердить",
                           callback_data=ProxyCatalogCallback.create(
@@ -153,6 +175,7 @@ class ProxyService:
                               unpacked_cb.proxy_type_id,
                               unpacked_cb.period,
                               unpacked_cb.quantity,
+                              proxy.price,
                               confirmation=True
                           ))
         kb_builder.button(text="❌ Отмена",

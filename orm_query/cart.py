@@ -28,18 +28,21 @@ class CartRepository:
             CartItem, Cart.id == CartItem.cart_id).where(
             Cart.id == cart.id)
         old_cart_records = await session.execute(get_old_cart_content)
-        old_cart_records = old_cart_records.scalar()
+        old_cart_records = old_cart_records.scalars().all()
 
         if old_cart_records is None:
             await CartItemRepository.create(cart_item, session)
 
         elif old_cart_records is not None:
-            quantity_update = (update(CartItem).where(CartItem.cart_id == cart.id)
-                               .values(name=CartItem.name,
-                                       proxy_type_id=CartItem.proxy_type_id,
-                                       country_id=CartItem.country_id,
-                                       period_days=CartItem.period_days,
-                                       quantity=CartItem.quantity + cart_item.quantity,
-                                       price=CartItem.price))
-            await session.execute(quantity_update)
+
+            for rec in old_cart_records:
+                if cart_item in rec.name:
+                    quantity_update = (update(CartItem).where(CartItem.cart_id == cart.id)
+                                       .values(name=CartItem.name,
+                                               proxy_type_id=CartItem.proxy_type_id,
+                                               country_id=CartItem.country_id,
+                                               period_days=CartItem.period_days,
+                                               quantity=CartItem.quantity + cart_item.quantity,
+                                               price=CartItem.price))
+                    await session.execute(quantity_update)
 

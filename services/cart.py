@@ -15,6 +15,7 @@ from orm_query.proxies import ProxiesRepository
 from orm_query.proxy_type import ProxyTypeRepository
 from orm_query.user import UserRepository
 from services.notification import NotificationService
+from services.proxy_type import ProxyService
 from utils.callbacks import ProxyCatalogCallback, CartCallback
 from utils.common import add_pagination_buttons
 
@@ -46,14 +47,15 @@ class CartService:
         cart_items = await CartItemRepository.get_by_user_id(user.id, 0 , session)
         kb_builder = InlineKeyboardBuilder()
         for cart_item in cart_items:
+            print(cart_item)
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name,
                                  proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
-            kb_builder.button(text="\uD83D\uDCE6 {proxy_name}| Цена: {total_price:.2f} руб. \n "
-                                   "Количество: {qty} \uD83D\uDDD1 \n".format(
+
+            days_count = await ProxyService.calculate_days(cart_item.period_days)
+            kb_builder.button(text="\uD83D\uDCE6 {proxy_name} | Сумма: {total_price:.2f} руб.\uD83D\uDDD1 \n".format(
                 proxy_name=cart_item.name,
-                total_price=cart_item.quantity * price,
-                qty=cart_item.quantity),
+                total_price=cart_item.quantity * price * days_count),
                 callback_data=CartCallback.create(1, page, cart_item_id=cart_item.id))
 
         if len(kb_builder.as_markup().inline_keyboard) > 0:
@@ -93,13 +95,15 @@ class CartService:
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name, proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
             proxy_type = await ProxyTypeRepository.get_by_id(cart_item.proxy_type_id, session)
+            days_count = await ProxyService.calculate_days(cart_item.period_days)
+
             line_proxy_total = float(price) * float(cart_item.quantity)
-            cart_line_item = ("📦 {proxy_name} | {proxy_type} | Цена: {price:.2f} руб. |"
-                              " Количество: {qty} 📑 \n").format(
+            cart_line_item = ("📦 {proxy_name} \n Тип прокси: {proxy_type} \n Цена: {price:.2f} руб. день/шт.\n"
+                              " Количество: {qty} шт.\n Период: {period_days}📑 \n").format(
                 proxy_name=cart_item.name, proxy_type=proxy_type.proxy_type, qty=cart_item.quantity,
-                price=price
+                price=price, period_days=cart_item.period_days
             )
-            cart_grand_total += line_proxy_total
+            cart_grand_total += line_proxy_total * days_count
             message_text += cart_line_item
         message_text += "\n<u>Итого: {cart_grand_total:.2f} руб.</u>".format(
             cart_grand_total=cart_grand_total
