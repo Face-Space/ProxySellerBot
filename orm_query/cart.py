@@ -1,5 +1,6 @@
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from models.cart import Cart, CartDTO
 from models.cartItem import CartItemDTO, CartItem
@@ -24,25 +25,31 @@ class CartRepository:
 
     @staticmethod
     async def add_to_cart(cart_item: CartItemDTO, cart: CartDTO, session: AsyncSession):
-        get_old_cart_content = select(Cart).join(
-            CartItem, Cart.id == CartItem.cart_id).where(
-            Cart.id == cart.id)
-        old_cart_records = await session.execute(get_old_cart_content)
-        old_cart_records = old_cart_records.scalars().all()
+        # get_old_cart_content = select(Cart).join(
+        #     CartItem, Cart.id == CartItem.cart_id).where(
+        #     Cart.id == cart.id)
+        # old_cart_records = await session.execute(get_old_cart_content)
+        # old_cart_records = old_cart_records.scalar()
 
-        if old_cart_records is None:
+        stmt = select(Cart).options(joinedload(Cart.cart_items)).where(Cart.id == cart.id)
+        result = await session.execute(stmt)
+        cart_obj = result.unique().scalar_one_or_none()
+
+        if cart_obj is None:
+            await CartItemRepository.create(cart_item, session)
+            return
+
+        existing_proxy = None  # а если эту переменную будут менять несколько человек одновременно?
+        for item in cart_obj.cart_items:
+            if item.name == cart_item.name and item.period_days == cart_item.period_days:
+                existing_proxy = item
+                break
+
+        if existing_proxy:
+            existing_proxy.quantity += cart_item.quantity
+            await session.flush()
+
+        else:
             await CartItemRepository.create(cart_item, session)
 
-        elif old_cart_records is not None:
-
-            for rec in old_cart_records:
-                if cart_item in rec.name:
-                    quantity_update = (update(CartItem).where(CartItem.cart_id == cart.id)
-                                       .values(name=CartItem.name,
-                                               proxy_type_id=CartItem.proxy_type_id,
-                                               country_id=CartItem.country_id,
-                                               period_days=CartItem.period_days,
-                                               quantity=CartItem.quantity + cart_item.quantity,
-                                               price=CartItem.price))
-                    await session.execute(quantity_update)
-
+        await session.commit()

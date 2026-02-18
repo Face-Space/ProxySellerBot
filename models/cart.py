@@ -18,7 +18,7 @@ class Cart(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
     # ForeignKey('users.id') означает, что мы можем вставить в carts.user_id только существующие значения из users.id
     # А также ForeignKey указывает кто является родителем, а кто ребёнком
-    cart_items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="cart", cascade="all, delete_orphan")
+    cart_items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
 
 class CartDTO(BaseModel):
     id: int | None = None

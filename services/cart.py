@@ -47,7 +47,6 @@ class CartService:
         cart_items = await CartItemRepository.get_by_user_id(user.id, 0 , session)
         kb_builder = InlineKeyboardBuilder()
         for cart_item in cart_items:
-            print(cart_item)
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name,
                                  proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
