@@ -70,4 +70,8 @@ class ProxiesRepository:
             await session.execute(query)
 
 
-
+    @staticmethod
+    async def get_by_cart_id(cart_id: int, session: AsyncSession):
+        query = select(Proxies).where(Proxies.id == cart_id)
+        proxy = await session.execute(query)
+        return proxy.scalar()

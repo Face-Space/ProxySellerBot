@@ -11,13 +11,14 @@ from orm_query.buy import BuyRepository
 from orm_query.buyProxy import BuyProxyRepository
 from orm_query.cart import CartRepository
 from orm_query.cartItem import CartItemRepository
+from orm_query.country import CountryRepository
 from orm_query.proxies import ProxiesRepository
 from orm_query.proxy_type import ProxyTypeRepository
 from orm_query.user import UserRepository
 from services.notification import NotificationService
 from services.proxy_type import ProxyService
 from utils.callbacks import ProxyCatalogCallback, CartCallback
-from utils.common import add_pagination_buttons
+from utils.common import add_pagination_buttons, add_pagination_buttons_for_cart
 
 
 class CartService:
@@ -60,13 +61,62 @@ class CartService:
         if len(kb_builder.as_markup().inline_keyboard) > 0:
             cart = await CartRepository.get_or_create(user.id, session)
             unpacked_cb = CartCallback.create(0) if isinstance(message, types.Message) else CartCallback.unpack(message.data)
-            kb_builder.button(text="🛍️ Оплатить", callback_data=CartCallback.create(2, page, cart.id))
+            kb_builder.button(text="🛍️ Оплатить", callback_data=CartCallback.create(3, page, cart.id))
             kb_builder.adjust(1)
             kb_builder = await add_pagination_buttons(kb_builder, unpacked_cb,
                                                       CartItemRepository.get_maximum_page(user.id, session), None)
             return "🛒 Корзина", kb_builder
         else:
             return "Корзина пуста", kb_builder
+
+
+    @staticmethod
+    async def change_cart_item(callback: CallbackQuery, session: AsyncSession):
+        message_text = ""
+        unpacked_cb = CartCallback.unpack(callback.data)
+        user = await UserRepository.get_by_tgid(callback.from_user.id, session)
+        # cart_items = await CartItemRepository.get_all_by_user_id(user.id, session)
+        cart_item = await CartItemRepository.get_by_cart_item_id(unpacked_cb.cart_item_id, user.id, session)
+
+
+        if unpacked_cb.cart_qty is not None:
+            cart_qty = unpacked_cb.cart_qty
+        else:
+            cart_qty = cart_item.quantity
+
+        proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name,
+                             proxy_type_id=cart_item.proxy_type_id)
+        price = await ProxiesRepository.get_price(proxy_dto, session)
+        proxy_type = await ProxyTypeRepository.get_by_id(cart_item.proxy_type_id, session)
+        country = await CountryRepository.get_by_id(cart_item.country_id, session)
+        available_qty = await ProxiesRepository.get_available_qty(proxy_dto, session)
+        days_count = await ProxyService.calculate_days(cart_item.period_days)
+
+        line_proxy_total = float(price) * float(cart_qty)
+        cart_line_item = ("📦 Название прокси: {proxy_name} \n{country_flag} Страна: {country_name} "
+                        "\n💾 Тип прокси: {proxy_type} "
+                        "\n💸 Цена: {price:.2f} руб. день/шт."
+                        "\n🔢 Количество в корзине: {cart_qty} шт.\n🔢 Доступное количество: {available_qty} "
+                        "\n🕐 Период: {period_days} "
+                        "\n💰 Итого: {total_price} руб.").format(
+            proxy_name=cart_item.name,
+            country_flag=country.country_flag,
+            country_name=country.country_name,
+            proxy_type=proxy_type.proxy_type,
+            price=price,
+            cart_qty=cart_qty,
+            available_qty=available_qty,
+            period_days=cart_item.period_days,
+            total_price=line_proxy_total * days_count,
+        )
+        message_text += cart_line_item
+
+        kb_builder = InlineKeyboardBuilder()
+        await add_pagination_buttons_for_cart(kb_builder, unpacked_cb, available_qty, cart_qty, unpacked_cb.cart_item_id)
+        kb_builder.row(types.InlineKeyboardButton(text="⬅️ Назад", callback_data=CartCallback.create(0).pack()))
+
+        return message_text, kb_builder
+
 
     @staticmethod
     async def delete_cart_item(callback: CallbackQuery, session: AsyncSession):
@@ -79,7 +129,7 @@ class CartService:
             return "Товар удалён из корзины", kb_builder
         else:
             kb_builder.button(text="✅ Подтвердить",
-                              callback_data=CartCallback.create(1, cart_item_id=cart_item_id, confirmation=True))
+                              callback_data=CartCallback.create(2, cart_item_id=cart_item_id, confirmation=True))
             kb_builder.button(text="❌ Отмена", callback_data=CartCallback.create(0))
             return "Удалить товар из корзины?         ", kb_builder
 
@@ -117,7 +167,7 @@ class CartService:
         cart_items = await CartItemRepository.get_all_by_user_id(user.id, session)
         message_text = await CartService.__create_checkout_msg(cart_items, session)
         kb_builder = InlineKeyboardBuilder()
-        kb_builder.button(text="✅ Подтвердить", callback_data=CartCallback.create(3, confirmation=True))
+        kb_builder.button(text="✅ Подтвердить", callback_data=CartCallback.create(4, confirmation=True))
         kb_builder.button(text="❌ Отмена", callback_data=CartCallback.create(0))
         return message_text, kb_builder
 

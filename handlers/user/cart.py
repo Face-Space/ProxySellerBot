@@ -24,6 +24,12 @@ async def show_cart(**kwargs):
         callback = message
         await callback.message.edit_text(msg, reply_markup=kb_builder.as_markup())
 
+async def change_cart_item(**kwargs):
+    callback = kwargs.get("callback")
+    session = kwargs.get("session")
+    msg, kb_builder = await CartService.change_cart_item(callback, session)
+    await callback.message.edit_text(text=msg, reply_markup=kb_builder.as_markup())
+
 
 async def delete_cart_item(**kwargs):
     callback = kwargs.get("callback")
@@ -54,9 +60,10 @@ async def navigate_cart_progress(callback: CallbackQuery, callback_data: CartCal
 
     level = {
         0: show_cart,
-        1: delete_cart_item,
-        2: checkout_processing,
-        3: buy_processing
+        1: change_cart_item,
+        2: delete_cart_item,
+        3: checkout_processing,
+        4: buy_processing
     }
 
     current_level_function = level[current_level]

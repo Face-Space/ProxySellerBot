@@ -2,6 +2,8 @@ from aiogram import types
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from utils.callbacks import CartCallback
+
 
 async def add_pagination_buttons(keyboard_builder: InlineKeyboardBuilder, unpacked_cb, max_page_function,
                                  back_button) -> InlineKeyboardBuilder:
@@ -31,3 +33,24 @@ async def add_pagination_buttons(keyboard_builder: InlineKeyboardBuilder, unpack
         keyboard_builder.row(back_button)
     return keyboard_builder
 
+
+async def add_pagination_buttons_for_cart(keyboard_builder: InlineKeyboardBuilder, unpacked_cb,
+                                          max_qty, cart_qty,  cart_item_id) -> InlineKeyboardBuilder:
+    buttons: list[InlineKeyboardButton] = [
+        types.InlineKeyboardButton(text="🗑", callback_data=CartCallback.create(level=2, cart_item_id=cart_item_id).pack())
+    ]
+
+    if cart_qty > 1:
+        buttons.append(types.InlineKeyboardButton(text="➖1️⃣", callback_data=CartCallback.create(level=1,
+                                                    cart_item_id=cart_item_id ,cart_qty=cart_qty - 1).pack()))
+
+    if cart_qty < max_qty:
+        buttons.append(types.InlineKeyboardButton(text="➕1️⃣", callback_data=CartCallback.create(level=1,
+                                                    cart_item_id=cart_item_id ,cart_qty=cart_qty + 1).pack()))
+
+        buttons.append(types.InlineKeyboardButton(text="♾️", callback_data=CartCallback.create(level=1,
+                                                    cart_item_id=cart_item_id ,cart_qty=max_qty).pack()))
+
+    keyboard_builder.row(*buttons)
+
+    return keyboard_builder

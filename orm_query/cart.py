@@ -39,7 +39,7 @@ class CartRepository:
             await CartItemRepository.create(cart_item, session)
             return
 
-        existing_proxy = None  # а если эту переменную будут менять несколько человек одновременно?
+        existing_proxy = None
         for item in cart_obj.cart_items:
             if item.name == cart_item.name and item.period_days == cart_item.period_days:
                 existing_proxy = item

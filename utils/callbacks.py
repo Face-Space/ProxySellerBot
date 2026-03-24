@@ -45,11 +45,17 @@ class CartCallback(BaseCallback, prefix="cart"):
     cart_id: int
     cart_item_id: int
     confirmation: bool
+    max_qty: int | None
+    cart_qty: int | None
 
     @staticmethod
-    def create(level: int = 0, page: int = 0, cart_id: int = -1, cart_item_id: int = -1, confirmation=False):
-        return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id,
+    def create(level: int = 0, page: int = 0, cart_id: int = -1, cart_item_id: int = -1, max_qty: int | None = None,
+               cart_qty: int | None = None, confirmation=False):
+        return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id, max_qty=max_qty, cart_qty=cart_qty,
                             confirmation=confirmation)
+
+
+
 
 
 

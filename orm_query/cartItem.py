@@ -44,5 +44,9 @@ class CartItemRepository:
         query = delete(CartItem).where(CartItem.id == cart_item_id)
         await session.execute(query)
 
-
+    @staticmethod
+    async def get_by_cart_item_id(cart_item_id: int, user_id: int, session: AsyncSession):
+        query = select(CartItem).join(Cart, CartItem.cart_id == Cart.id).where(Cart.user_id == user_id, CartItem.id == cart_item_id)
+        proxy = await session.execute(query)
+        return proxy.scalar()
 
