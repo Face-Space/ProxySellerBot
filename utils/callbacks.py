@@ -1,6 +1,8 @@
 from aiogram import types
 from aiogram.filters.callback_data import CallbackData
 
+from enums.sort_order import SortOrder
+
 
 class BaseCallback(CallbackData, prefix="base"):
     level: int
@@ -13,6 +15,10 @@ class BaseCallback(CallbackData, prefix="base"):
             cb_copy.level = lvl
 
         return types.InlineKeyboardButton(text="⬅️ Назад", callback_data=cb_copy.create(**cb_copy.model_dump()).pack())
+
+class SortingCallback(CallbackData, prefix="sorting"):
+    sort_order: SortOrder
+
 
 
 class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
@@ -47,15 +53,12 @@ class CartCallback(BaseCallback, prefix="cart"):
     confirmation: bool
     max_qty: int | None
     cart_qty: int | None
+    action: str | None
 
     @staticmethod
     def create(level: int = 0, page: int = 0, cart_id: int = -1, cart_item_id: int = -1, max_qty: int | None = None,
-               cart_qty: int | None = None, confirmation=False):
-        return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id, max_qty=max_qty, cart_qty=cart_qty,
-                            confirmation=confirmation)
+               cart_qty: int | None = None, confirmation=False, action: str | None = None):
+        return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id, max_qty=max_qty,
+                            cart_qty=cart_qty, confirmation=confirmation, action=action)
 
-
-
-
-
-
+class MyProfileCalback(BaseCallback, SortingCallback, prefix="my_profile")

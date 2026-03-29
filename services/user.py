@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from aiogram.types import InputMediaPhoto, InputMediaVideo, InputMediaAnimation
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user import UserDTO
@@ -42,3 +44,10 @@ class UserService:
         }
 
         return mapping.get(payload, timedelta(days=0))
+
+    @staticmethod
+    async def get_my_profile_buttons(telegram_id: int, session: AsyncSession) -> tuple[InputMediaPhoto |
+                                                                                       InputMediaVideo |
+                                                                                       InputMediaAnimation, InlineKeyboardBuilder]:
+        kb_builder = InlineKeyboardBuilder()
+        kb_builder.button(text="➕ Пополнить баланс", callback_data=MyProfileCallback.create(level=1))

@@ -44,19 +44,35 @@ class CartService:
     @staticmethod
     async def create_buttons(message: types.Message | CallbackQuery, session: AsyncSession):
         user = await UserRepository.get_by_tgid(message.from_user.id, session)
-        page = 0 if isinstance(message, types.Message) else CartCallback.unpack(message.data).page
+        unpacked_cb = None
+
+        if isinstance(message, types.Message):
+            page = 0
+        else:
+            page = CartCallback.unpack(message.data).page
+            unpacked_cb = CartCallback.unpack(message.data)
+            # меняем в CartItem кол-во определённого прокси
+            await CartItemRepository.update_cart_item(unpacked_cb.cart_item_id, user.id, unpacked_cb.cart_qty, session)
+
         cart_items = await CartItemRepository.get_by_user_id(user.id, 0 , session)
         kb_builder = InlineKeyboardBuilder()
+
         for cart_item in cart_items:
+
+            if unpacked_cb and unpacked_cb.cart_qty:
+                cart_qty = unpacked_cb.cart_qty
+            else:
+                cart_qty = cart_item.quantity
+
             proxy_dto = ProxyDTO(country_id=cart_item.country_id, name=cart_item.name,
                                  proxy_type_id=cart_item.proxy_type_id)
             price = await ProxiesRepository.get_price(proxy_dto, session)
-
             days_count = await ProxyService.calculate_days(cart_item.period_days)
+
             kb_builder.button(text="\uD83D\uDCE6 {proxy_name} | Сумма: {total_price:.2f} руб.\uD83D\uDDD1 \n".format(
                 proxy_name=cart_item.name,
-                total_price=cart_item.quantity * price * days_count),
-                callback_data=CartCallback.create(1, page, cart_item_id=cart_item.id))
+                total_price=cart_qty * price * days_count),
+                callback_data=CartCallback.create(1, page, cart_item_id=cart_item.id, cart_qty=cart_qty))
 
         if len(kb_builder.as_markup().inline_keyboard) > 0:
             cart = await CartRepository.get_or_create(user.id, session)
@@ -78,9 +94,14 @@ class CartService:
         # cart_items = await CartItemRepository.get_all_by_user_id(user.id, session)
         cart_item = await CartItemRepository.get_by_cart_item_id(unpacked_cb.cart_item_id, user.id, session)
 
-
-        if unpacked_cb.cart_qty is not None:
-            cart_qty = unpacked_cb.cart_qty
+        cart_qty = unpacked_cb.cart_qty
+        if cart_qty is not None:
+            if unpacked_cb.action == "+":
+                cart_qty += 1
+            elif unpacked_cb.action == "-":
+                cart_qty -= 1
+            elif unpacked_cb.action == "♾️":
+                cart_qty = unpacked_cb.max_qty
         else:
             cart_qty = cart_item.quantity
 
@@ -92,13 +113,14 @@ class CartService:
         available_qty = await ProxiesRepository.get_available_qty(proxy_dto, session)
         days_count = await ProxyService.calculate_days(cart_item.period_days)
 
-        line_proxy_total = float(price) * float(cart_qty)
+        line_proxy_total = float(price) * float(cart_qty) * days_count
         cart_line_item = ("📦 Название прокси: {proxy_name} \n{country_flag} Страна: {country_name} "
                         "\n💾 Тип прокси: {proxy_type} "
                         "\n💸 Цена: {price:.2f} руб. день/шт."
                         "\n🔢 Количество в корзине: {cart_qty} шт.\n🔢 Доступное количество: {available_qty} "
                         "\n🕐 Период: {period_days} "
-                        "\n💰 Итого: {total_price} руб.").format(
+                        "\n💰 Итого: {total_price} руб."
+                        "\n<i>При нажатии 'Назад к оплате' все изменения автоматически сохраняются!</i>").format(
             proxy_name=cart_item.name,
             country_flag=country.country_flag,
             country_name=country.country_name,
@@ -107,13 +129,14 @@ class CartService:
             cart_qty=cart_qty,
             available_qty=available_qty,
             period_days=cart_item.period_days,
-            total_price=line_proxy_total * days_count,
+            total_price=line_proxy_total,
         )
         message_text += cart_line_item
 
         kb_builder = InlineKeyboardBuilder()
         await add_pagination_buttons_for_cart(kb_builder, unpacked_cb, available_qty, cart_qty, unpacked_cb.cart_item_id)
-        kb_builder.row(types.InlineKeyboardButton(text="⬅️ Назад", callback_data=CartCallback.create(0).pack()))
+        kb_builder.row(types.InlineKeyboardButton(text="⬅️ Назад к оплате", callback_data=CartCallback.create(level=0,
+                                                  cart_qty=cart_qty, cart_item_id=unpacked_cb.cart_item_id).pack()))
 
         return message_text, kb_builder
 

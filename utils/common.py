@@ -42,15 +42,14 @@ async def add_pagination_buttons_for_cart(keyboard_builder: InlineKeyboardBuilde
 
     if cart_qty > 1:
         buttons.append(types.InlineKeyboardButton(text="➖1️⃣", callback_data=CartCallback.create(level=1,
-                                                    cart_item_id=cart_item_id ,cart_qty=cart_qty - 1).pack()))
+                                cart_item_id=cart_item_id ,cart_qty=cart_qty, max_qty=max_qty, action="-").pack()))
 
     if cart_qty < max_qty:
         buttons.append(types.InlineKeyboardButton(text="➕1️⃣", callback_data=CartCallback.create(level=1,
-                                                    cart_item_id=cart_item_id ,cart_qty=cart_qty + 1).pack()))
+                                cart_item_id=cart_item_id ,cart_qty=cart_qty, max_qty=max_qty, action="+").pack()))
 
         buttons.append(types.InlineKeyboardButton(text="♾️", callback_data=CartCallback.create(level=1,
-                                                    cart_item_id=cart_item_id ,cart_qty=max_qty).pack()))
-
+                                cart_item_id=cart_item_id ,cart_qty=cart_qty, max_qty=max_qty, action="♾️").pack()))
     keyboard_builder.row(*buttons)
 
     return keyboard_builder

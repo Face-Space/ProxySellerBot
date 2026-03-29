@@ -1,6 +1,6 @@
 import math
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import config
@@ -49,4 +49,12 @@ class CartItemRepository:
         query = select(CartItem).join(Cart, CartItem.cart_id == Cart.id).where(Cart.user_id == user_id, CartItem.id == cart_item_id)
         proxy = await session.execute(query)
         return proxy.scalar()
+
+    @staticmethod
+    async def update_cart_item(cart_item_id: int, user_id: int, quantity: int, session: AsyncSession):
+        query = (update(CartItem)
+                 .where(CartItem.id == cart_item_id, CartItem.cart_id == select(Cart.id)
+                        .where(Cart.user_id == user_id).scalar_subquery()).values(quantity=quantity))
+        await session.execute(query)
+        await session.commit()
 
