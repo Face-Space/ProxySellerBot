@@ -19,6 +19,7 @@ import config
 from config import *
 from database.engine import create_db, session_maker
 from handlers.user.cart import cart_router
+from handlers.user.my_profile import my_profile_router
 from handlers.user.proxy_catalog import proxy_catalog_router
 from handlers.user.user_private import user_router
 from middlewares.db import DataBaseSession
@@ -140,9 +141,10 @@ logger = logging.getLogger(__name__)
 #     #     logger.error(f"Ошибка запуска бота: {e}")
 
 
-dp.include_router(proxy_catalog_router)
-dp.include_router(cart_router)
-dp.include_routers(user_router)
+# dp.include_router(proxy_catalog_router)
+# dp.include_router(cart_router)
+# dp.include_router(my_profile_router)
+dp.include_routers( proxy_catalog_router, cart_router, my_profile_router, user_router)
 
 
 

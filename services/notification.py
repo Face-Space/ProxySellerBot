@@ -1,7 +1,8 @@
 from aiogram import types, Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import BufferedInputFile, InlineKeyboardMarkup
+from aiogram.types import BufferedInputFile, InlineKeyboardMarkup, InputMediaPhoto, InputMediaVideo, \
+    InputMediaAnimation, Message
 import logging
 
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -77,4 +78,20 @@ class NotificationService:
         )
         await NotificationService.send_to_admins(message, user_button)
 
-
+    @staticmethod
+    async def answer_media(message: Message,
+                           media: InputMediaPhoto | InputMediaVideo | InputMediaAnimation,
+                           reply_markup: InlineKeyboardMarkup | None = None) -> Message:
+        if isinstance(media, InputMediaPhoto):
+            message = await message.answer_photo(photo=media.media,
+                                                 caption=media.caption,
+                                                 reply_markup=reply_markup)
+        elif isinstance(media, InputMediaVideo):
+            message = await message.answer_video(video=media.media,
+                                                 caption=media.caption,
+                                                 reply_markup=reply_markup)
+        else:
+            message = await message.answer_animation(animation=media.media,
+                                                     caption=media.caption,
+                                                     reply_markup=reply_markup)
+        return message

@@ -1,8 +1,9 @@
 from aiogram import types
+from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from utils.callbacks import CartCallback
+from utils.callbacks import CartCallback, SortingCallback
 
 
 async def add_pagination_buttons(keyboard_builder: InlineKeyboardBuilder, unpacked_cb, max_page_function,
@@ -53,3 +54,22 @@ async def add_pagination_buttons_for_cart(keyboard_builder: InlineKeyboardBuilde
     keyboard_builder.row(*buttons)
 
     return keyboard_builder
+
+
+# async def get_filters_settings(state: FSMContext,
+#                                callback_data: SortingCallback) -> tuple[dict[str, int], list[str]]:
+#     state_data = await state.get_data()
+#     sort_pairs = state_data.get("sort_pairs", {}).copy()
+#     sort_key = str(callback_data.sort_property.value)
+#     sort_pairs[sort_key] = callback_data.sort_order.value
+#     await state.update_data(sort_pairs=sort_pairs)
+#     filter_data = state_data.get("filter")
+#     if filter_data is not None:
+#         filters = [f.strip() for f in filter_data.split(",")]
+#         callback_data.is_filter_enabled = True
+#     else:
+#         filters = None
+#     return sort_pairs, filters
+
+
+

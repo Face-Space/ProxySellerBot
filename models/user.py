@@ -20,6 +20,12 @@ class User(Base):
     can_receive_messages: Mapped[int] = mapped_column(Boolean, default=True)
     buys: Mapped[list["Buy"]] = relationship(back_populates="buyer")
 
+    payments = relationship(
+        "Payment",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     __table_args__ = (
         CheckConstraint('top_up_amount >= 0', name='check_top_up_amount_positive'),
         CheckConstraint('consume_records >= 0', name='check_consume_records_positive'),

@@ -1,11 +1,15 @@
 from aiogram import types
 from aiogram.filters.callback_data import CallbackData
 
+from enums.cryptocurrency import Cryptocurrency
 from enums.sort_order import SortOrder
+from enums.sort_property import SortProperty
+from enums.user_role import UserRole
 
 
 class BaseCallback(CallbackData, prefix="base"):
     level: int
+    page: int = 0
 
     def get_back_button(self, lvl: int | None = None):
         cb_copy = self.__copy__()
@@ -18,7 +22,8 @@ class BaseCallback(CallbackData, prefix="base"):
 
 class SortingCallback(CallbackData, prefix="sorting"):
     sort_order: SortOrder
-
+    sort_property: SortProperty
+    is_filter_enabled: bool = False
 
 
 class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
@@ -29,7 +34,7 @@ class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
     quantity: int
     price: float
     confirmation: bool
-    page: int
+
 
     @staticmethod
     def create(level: int,
@@ -47,7 +52,6 @@ class ProxyCatalogCallback(BaseCallback, prefix="proxy_catalog"):
 
 
 class CartCallback(BaseCallback, prefix="cart"):
-    page: int
     cart_id: int
     cart_item_id: int
     confirmation: bool
@@ -61,4 +65,38 @@ class CartCallback(BaseCallback, prefix="cart"):
         return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id, max_qty=max_qty,
                             cart_qty=cart_qty, confirmation=confirmation, action=action)
 
-class MyProfileCalback(BaseCallback, SortingCallback, prefix="my_profile")
+
+class MyProfileCallback(BaseCallback, SortingCallback, prefix="my_profile"):
+    buy_id: int | None = None
+    buyItem_id: int | None = None
+    cryptocurrency: Cryptocurrency | None = None
+    user_role: UserRole = UserRole.USER
+    confirmation: bool = False
+
+    @staticmethod
+    def create(level: int,
+               buy_id: int | None = None,
+               buy_item_id: int | None = None,
+               sort_order: SortOrder = SortOrder.DISABLE,
+               sort_property: SortProperty = SortProperty.BUY_DATETIME,
+               is_filter_enabled: bool = False,
+               cryptocurrency: Cryptocurrency | None = None,
+               user_role: UserRole = UserRole.USER,
+               confirmation: bool = False,
+               page=0) -> 'MyProfileCallback':
+        return MyProfileCallback(level=level, buy_id=buy_id, buyItem_id=buy_item_id,
+                                 sort_order=sort_order, sort_property=sort_property,
+                                 is_filter_enabled=is_filter_enabled,
+                                 cryptocurrency=cryptocurrency,
+                                 user_role=user_role,
+                                 confirmation=confirmation,
+                                 page=page)
+
+
+class AdminMenuCallback(BaseCallback, prefix="admin_menu"):
+
+    @staticmethod
+    def create(level: int, page: int = 0):
+        return AdminMenuCallback(level=level, page=page)
+
+
