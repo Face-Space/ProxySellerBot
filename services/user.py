@@ -62,9 +62,9 @@ class UserService:
         kb_builder.button(text="🧾 История покупок", callback_data=MyProfileCallback.create(level=3))
         kb_builder.adjust(2)
         user = await UserRepository.get_by_tgid(telegram_id, session)
-        fiat_balance = round(user.top_up_amount - user.consume_records, 2)
+        fiat_balance = round(user.top_up_amount - user.consume_records)
         caption = (("👤 <b>Ваш профиль\nID:</b> <code>{telegram_id}</code>\n"
-                   "\n<b>Ваш баланс в рублях:</b>")
+                   "\n<b>Ваш баланс: {fiat_balance} руб.</b>")
                    .format(telegram_id=user.telegram_id, fiat_balance=fiat_balance))
 
         button_media = await ButtonMediaRepository.get_by_button(KeyboardButton.MY_PROFILE, session)
@@ -85,13 +85,14 @@ class UserService:
         return "💵 Выберите метод пополнения", kb_builder
 
     @staticmethod
-    async def get_purchase_history_buttons(
+    async def get_purchase_history_buttons(telegram_user_id: int,
                                            callback_data: MyProfileCallback | None,
                                            session: AsyncSession
                                            ) -> tuple[str, InlineKeyboardBuilder]:
         callback_data = callback_data or MyProfileCallback.create(level=3)
-        user_id = None
-        buys = await BuyRepository.get_by_buyer_id(user_id, callback_data.page, session)
+        # user_id = None
+        user_id = await UserRepository.get_by_tgid(telegram_user_id, session)
+        buys = await BuyRepository.get_by_user_id(user_id.id, callback_data.page, session)
         kb_builder = InlineKeyboardBuilder()
         for buy in buys:
             kb_builder.button(text="📦 Покупка: #{buy_id}  | Итоговая цена: {total_price:.2f} руб.".format(
@@ -102,6 +103,7 @@ class UserService:
                     buy_id=buy.id,
                     user_role=callback_data.user_role
                 ))
+        kb_builder.row(callback_data.get_back_button(0))
         kb_builder.adjust(1)
 
         if len(kb_builder.as_markup().inline_keyboard) > 1 and callback_data.user_role == UserRole.USER:

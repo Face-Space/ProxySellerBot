@@ -143,23 +143,27 @@ class PaymentService:
             else:
                 return PaymentService.__request_fiat_amount(kb_builder)
         else:
-            message = await callback.message.edit_caption(caption=get_text(language, BotEntity.USER, "loading"))
+            message = await callback.message.edit_caption(caption="⏳ Загрузка...")
             payment_dto = ProcessingPaymentDTO(
                 paymentType=PaymentType.DEPOSIT,
-                fiatCurrency=config.CURRENCY,
+                fiatCurrency="руб.",
                 cryptoCurrency=cryptocurrency
             )
             payment_dto = await PaymentService.__create_invoice(payment_dto)
             await PaymentRepository.create(payment_dto.id, user.id, message.message_id, session)
-            await session_commit(session)
+            await session.commit()
             timestamp_s = payment_dto.expireDatetime / 1000
             dt = datetime.fromtimestamp(timestamp_s, tz=timezone.utc)
             formatted = dt.strftime('%H:%M UTC on %B %d, %Y')
-            caption = get_text(language, BotEntity.USER, "top_up_balance_deposit_msg").format(
+            caption = ("💵 <b>Внесите желаемую сумму на указанный адрес {crypto_name} чтобы пополнить баланс\n"
+                       "\nСтатус платежа {status}. Срок действия платежа до {payment_lifetime}</b>\n"
+                       "\n<b>Важно</b>\n<i>Указаны уникальные {crypto_name} адреса для каждого депозита.\n"
+                       "\nПополнение счета осуществляется в течение 5 минут после перевода. "
+                       "После успешного обновления баланса вы получите уведомление от бота</i>\n"
+                       "\n<b>Ваш {crypto_name} адрес\n</b><code>{addr}</code>").format(
                 crypto_name=payment_dto.cryptoCurrency.name,
                 addr=payment_dto.address,
-                currency_text=config.CURRENCY.get_localized_text(),
-                status=get_text(language, BotEntity.USER, "status_pending"),
+                status="🟡 В ожидании.",
                 payment_lifetime=formatted
             )
             qr_code_file = PaymentService.__create_qr_code(payment_dto)

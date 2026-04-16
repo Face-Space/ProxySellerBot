@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from services.buy import BuyService
 from services.notification import NotificationService
 from services.payment import PaymentService
 from services.user import UserService
@@ -54,7 +55,20 @@ async def purchase_history(**kwargs):
     callback: CallbackQuery = kwargs.get("callback")
     callback_data: MyProfileCallback = kwargs.get("callback_data")
     session: AsyncSession = kwargs.get("session")
-    msg_text, kb_builder = await UserService.get_purchase_history_buttons(callback_data, session)
+    msg_text, kb_builder = await UserService.get_purchase_history_buttons(callback.from_user.id, callback_data, session)
+
+    if callback.message.caption:
+        await callback.message.edit_caption(caption=msg_text, reply_markup=kb_builder.as_markup())
+    else:
+        await callback.message.edit_text(text=msg_text, reply_markup=kb_builder.as_markup())
+
+
+async def get_purchased_item(**kwargs):
+    callback: CallbackQuery = kwargs.get("callback")
+    callback_data: MyProfileCallback = kwargs.get("callback_data")
+    session: AsyncSession = kwargs.get("session")
+
+    msg_text, kb_builder = await BuyService.get_purchased_item(callback_data, session)
 
     if callback.message.caption:
         await callback.message.edit_caption(caption=msg_text, reply_markup=kb_builder.as_markup())
@@ -74,8 +88,7 @@ async def navigate(callback: CallbackQuery,
         1: top_up_balance,
         2: create_payment,
         3: purchase_history,
-        4: get_purchased_item,
-        5: get_purchase
+        4: get_purchased_item
     }
 
     current_level_function = levels[current_level]

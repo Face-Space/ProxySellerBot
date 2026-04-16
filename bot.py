@@ -12,13 +12,16 @@ from contextlib import asynccontextmanager
 import asyncio
 import logging
 import traceback
+import django
 
 from redis.asyncio import Redis
 
 import config
 from config import *
 from database.engine import create_db, session_maker
+
 from handlers.user.cart import cart_router
+from handlers.user.contact_admin import contact_router
 from handlers.user.my_profile import my_profile_router
 from handlers.user.proxy_catalog import proxy_catalog_router
 from handlers.user.user_private import user_router
@@ -32,9 +35,10 @@ load_dotenv(find_dotenv())
 bot = Bot(token=config.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 logger = logging.getLogger(__name__)
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+django.setup()
 
-
-
+from handlers.admin.commands import admin_router
 # @asynccontextmanager
 # async def lifespan(my_app: FastAPI):
 #     # защита от повторного импорта роутеров ювикорном
@@ -144,7 +148,7 @@ logger = logging.getLogger(__name__)
 # dp.include_router(proxy_catalog_router)
 # dp.include_router(cart_router)
 # dp.include_router(my_profile_router)
-dp.include_routers( proxy_catalog_router, cart_router, my_profile_router, user_router)
+dp.include_routers( admin_router, proxy_catalog_router, cart_router, my_profile_router, contact_router, user_router)
 
 
 

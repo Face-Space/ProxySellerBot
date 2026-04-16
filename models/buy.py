@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from sqlalchemy import Integer, ForeignKey, Float, DateTime, Boolean, CheckConstraint, func
+from sqlalchemy import Integer, ForeignKey, Float, DateTime, Boolean, CheckConstraint, func, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
-# from models.buyProxy import BuyProxy
 
 
 class Buy(Base):

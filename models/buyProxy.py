@@ -3,7 +3,6 @@ from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
-# from models.buy import Buy
 
 
 class BuyProxy(Base):
