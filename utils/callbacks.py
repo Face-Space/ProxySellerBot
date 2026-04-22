@@ -58,12 +58,13 @@ class CartCallback(BaseCallback, prefix="cart"):
     max_qty: int | None
     cart_qty: int | None
     action: str | None
+    cart_grand_total: int | None
 
     @staticmethod
     def create(level: int = 0, page: int = 0, cart_id: int = -1, cart_item_id: int = -1, max_qty: int | None = None,
-               cart_qty: int | None = None, confirmation=False, action: str | None = None):
+               cart_qty: int | None = None, confirmation=False, action: str | None = None, cart_grand_total: int | None = None):
         return CartCallback(level=level, page=page, cart_id=cart_id, cart_item_id=cart_item_id, max_qty=max_qty,
-                            cart_qty=cart_qty, confirmation=confirmation, action=action)
+                            cart_qty=cart_qty, confirmation=confirmation, action=action, cart_grand_total=cart_grand_total)
 
 
 class MyProfileCallback(BaseCallback, SortingCallback, prefix="my_profile"):

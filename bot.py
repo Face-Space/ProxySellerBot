@@ -155,7 +155,10 @@ dp.include_routers( admin_router, proxy_catalog_router, cart_router, my_profile_
 async def _on_startup():
     await create_db()
     for admin in ADMIN_ID_LIST:
-        await bot.send_message(admin, "Бот работает для всех")
+        try:
+            await bot.send_message(admin, "Бот работает для всех")
+        except Exception as e:
+            print(f"Не удалось отправить сообщение админу {admin}: {e}")
     print("Бот работает для всех")
 
 
@@ -191,5 +194,10 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     main()
+
+# Ошибка во время оплаты заказа!!!!!!!!!!!!!!!!!!!!!!
+# docker run -d --name my-running-bot --env-file .env proxy-seller-bot
+
+
 
 

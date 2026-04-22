@@ -16,6 +16,7 @@ from models.user import UserDTO
 from orm_query.country import CountryRepository
 from orm_query.proxies import ProxiesRepository
 from orm_query.proxy_type import ProxyTypeRepository
+from services.proxy_type import ProxyService
 
 logger = logging.getLogger(__name__)
 
@@ -52,27 +53,28 @@ class NotificationService:
                                                     name=proxy.name, proxy_type_id=proxy.proxy_type_id), session)
             country = await CountryRepository.get_by_id(proxy.country_id, session)
             proxy_type_id = await ProxyTypeRepository.get_by_id(proxy.proxy_type_id, session)
-            cart_item_total = float(price) * float(proxy.quantity)
+            days_count = await ProxyService.calculate_days(proxy.period_days)
+            cart_item_total = float(price) * float(proxy.quantity) * days_count
             cart_grand_total += cart_item_total
             if user.telegram_username:
                 message += ("🛒 Новая покупка пользователя @{username} на сумму {total_price:.2f} руб. \n"
-                            "Количество прокси {quantity} шт. \n Страна: {country_name}. "
-                            "Тип прокси: \n {proxy_type}.").format(
+                            "Количество прокси {quantity} шт. \nСтрана: {country_name}. "
+                            "\nТип прокси: {proxy_type}.\n").format(
                     username=user.telegram_username,
                     total_price=cart_item_total,
                     quantity=proxy.quantity,
                     country_name=country.country_name,
-                    proxy_type=proxy_type_id.proxy_type + "\n"
+                    proxy_type=proxy_type_id.proxy_type
                 )
             else:
                 message += ("🛒 Новая покупка пользователя с ID {telegram_id} на сумму {total_price:.2f} руб. \n"
-                            "Количество прокси {quantity} шт. \n Страна: {country_name}. "
-                            "Тип прокси: \n {proxy_type}.").format(
+                            "Количество прокси {quantity} шт. \nСтрана: {country_name}. "
+                            "\nТип прокси: {proxy_type}.\n").format(
                     telegram_id=user.telegram_id,
                     total_price=cart_item_total,
                     quantity=proxy.quantity,
                     country_name=country.country_name,
-                    proxy_type=proxy_type_id.proxy_type + "\n")
+                    proxy_type=proxy_type_id.proxy_type)
         message += "\n<u>Общая сумма: {cart_grand_total:.2f} руб.</u>".format(
             cart_grand_total=cart_grand_total
         )

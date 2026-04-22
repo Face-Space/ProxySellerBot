@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from sqlalchemy import Integer, ForeignKey, Float, DateTime, Boolean, CheckConstraint, func, BigInteger
+from sqlalchemy import Integer, ForeignKey, Float, DateTime, Boolean, CheckConstraint, func, BigInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
@@ -17,6 +17,7 @@ class Buy(Base):
     total_price: Mapped[int] = mapped_column(Float, nullable=False)
     buy_datetime: Mapped[DateTime] = mapped_column(DateTime, default=func.date_trunc("second", func.now()))
     is_refunded: Mapped[bool] = mapped_column(Boolean, default=False)
+    period_days: Mapped[str] = mapped_column(String)
     buys: Mapped[list["BuyProxy"]] = relationship("BuyProxy", back_populates="buy", passive_deletes="all")
 
 
@@ -32,6 +33,7 @@ class BuyDTO(BaseModel):
     total_price: float | None = None
     buy_datetime: datetime | None = None
     is_refunded: bool | None = None
+    period_days: str | None = None
 
 
 class RefundDTO(BaseModel):

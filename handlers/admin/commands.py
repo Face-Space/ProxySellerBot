@@ -15,5 +15,4 @@ async def admin_stats(message: Message):
     for admin_id in ADMIN_ID_LIST:
         await bot.send_message(admin_id , f"Вот ссылка в вашу админку: ")
         # python manage.py runserver
-        # AdminFilter?
-        # а мне теперь надо заново создавать superuser для админки после миграции с существующими таблицами?
+

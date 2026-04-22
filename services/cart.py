@@ -158,7 +158,7 @@ class CartService:
 
 
     @staticmethod
-    async def __create_checkout_msg(cart_items: list[CartItemDTO], session: AsyncSession) -> str:
+    async def __create_checkout_msg(cart_items: list[CartItemDTO], session: AsyncSession) -> tuple[str, int]:
         message_text = "Оформить заказ?"
         message_text += "<b>\n\n"
         cart_grand_total = 0.0
@@ -181,16 +181,18 @@ class CartService:
             cart_grand_total=cart_grand_total
         )
         message_text += "</b>"
-        return message_text
+
+        return message_text, cart_grand_total
 
 
     @staticmethod
     async def checkout_processing(callback: CallbackQuery, session: AsyncSession) -> tuple[str, InlineKeyboardBuilder]:
         user = await UserRepository.get_by_tgid(callback.from_user.id, session)
         cart_items = await CartItemRepository.get_all_by_user_id(user.id, session)
-        message_text = await CartService.__create_checkout_msg(cart_items, session)
+        message_text, cart_grand_total = await CartService.__create_checkout_msg(cart_items, session)
         kb_builder = InlineKeyboardBuilder()
-        kb_builder.button(text="✅ Подтвердить", callback_data=CartCallback.create(4, confirmation=True))
+        kb_builder.button(text="✅ Подтвердить", callback_data=CartCallback.create(4, cart_grand_total=cart_grand_total,
+                                                                                  confirmation=True))
         kb_builder.button(text="❌ Отмена", callback_data=CartCallback.create(0))
         return message_text, kb_builder
 
@@ -221,13 +223,17 @@ class CartService:
             sold_items = []
             msg = "Оплата прошла успешно, спасибо за покупку😉"
             for cart_item in cart_items:
-                price = await ProxiesRepository.get_price(ProxyDTO(country_id=cart_item.country_id,
-                                        name=cart_item.name, proxy_type_id=cart_item.proxy_type_id), session)
+                # price = await ProxiesRepository.get_price(ProxyDTO(country_id=cart_item.country_id,
+                #                         name=cart_item.name, proxy_type_id=cart_item.proxy_type_id), session)
                 purchased_proxies = await ProxiesRepository.get_purchased_proxies(cart_item.country_id,
                                 cart_item.proxy_type_id, cart_item.quantity, cart_item.name, session)
-                buy_dto = BuyDTO(buyer_id=user.id, quantity=cart_item.quantity, total_price=cart_item.quantity * price)
+                buy_dto = BuyDTO(buyer_id=user.id, quantity=cart_item.quantity,
+                                 total_price=unpacked_cb.cart_grand_total, period_days=cart_item.period_days)
                 buy_id = await BuyRepository.create(buy_dto, session)
-                buy_proxy_dto_list = [BuyProxyDTO(proxy_id=proxy.id, buy_id=buy_id) for proxy in purchased_proxies]
+
+                # days_count = await ProxyService.calculate_days(cart_item.period_days)
+                buy_proxy_dto_list = [BuyProxyDTO(proxy_id=proxy.id, buy_id=buy_id,
+                                                  period_days=cart_item.period_days) for proxy in purchased_proxies]
                 await BuyProxyRepository.create_many(buy_proxy_dto_list, session)
                 for proxy in purchased_proxies:
                     proxy.quantity -= cart_item.quantity

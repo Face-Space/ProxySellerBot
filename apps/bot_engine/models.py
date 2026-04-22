@@ -70,6 +70,9 @@ class Carts(models.Model):
     created = models.DateTimeField()
     updated = models.DateTimeField()
 
+    def __str__(self):
+        return str(self.user)
+
     class Meta:
         managed = False
         db_table = 'carts'
@@ -81,6 +84,9 @@ class Countries(models.Model):
     country_flag = models.CharField(unique=True)
     created = models.DateTimeField()
     updated = models.DateTimeField()
+
+    def __str__(self):
+        return self.country_name
 
     class Meta:
         managed = False
@@ -113,11 +119,25 @@ class Periods(models.Model):
         db_table = 'periods'
 
 
+class ProxyTypes(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    proxy_type = models.CharField()
+    created = models.DateTimeField()
+    updated = models.DateTimeField()
+
+    def __str__(self):
+        return self.proxy_type
+
+    class Meta:
+        managed = False
+        db_table = 'proxy_types'
+
+
 class Proxies(models.Model):
     id = models.BigAutoField(primary_key=True)
     country = models.ForeignKey(Countries, models.DO_NOTHING)
     name = models.CharField()
-    proxy_type_id = models.IntegerField()
+    proxy_type = models.ForeignKey(ProxyTypes, models.DO_NOTHING, verbose_name="Тип прокси", db_column='proxy_type_id')
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     created = models.DateTimeField()
@@ -126,17 +146,6 @@ class Proxies(models.Model):
     class Meta:
         managed = False
         db_table = 'proxies'
-
-
-class ProxyTypes(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    proxy_type = models.CharField()
-    created = models.DateTimeField()
-    updated = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'proxy_types'
 
 
 class Users(models.Model):
@@ -149,6 +158,9 @@ class Users(models.Model):
     can_receive_messages = models.BooleanField()
     created = models.DateTimeField()
     updated = models.DateTimeField()
+
+    def __str__(self):
+        return str(self.telegram_username or self.telegram_id)
 
     class Meta:
         managed = False

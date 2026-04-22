@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import Integer, ForeignKey
+from sqlalchemy import Integer, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from models import Base
@@ -13,10 +13,12 @@ class BuyProxy(Base):
     buy: Mapped["Buy"] = relationship("Buy", back_populates="buys")
     proxy_id: Mapped[int] = mapped_column(Integer, ForeignKey("proxies.id", ondelete="CASCADE"), nullable=False)
     proxy: Mapped["Proxies"] = relationship("Proxies", back_populates="proxies")
+    period_days: Mapped[str] = mapped_column(String)
 
 
 class BuyProxyDTO(BaseModel):
     id: int | None = None
     buy_id: int | None = None
     proxy_id: int | None = None
+    period_days: str | None = None
 
