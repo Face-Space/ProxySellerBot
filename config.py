@@ -5,10 +5,10 @@ import os
 load_dotenv(find_dotenv())
 
 TOKEN = os.environ.get("TOKEN")
-WEBHOOK_HOST = os.environ.get("WEBHOOK_HOST")
-# WEBHOOK_PATH = f"/bot{TOKEN}"
-WEBHOOK_PATH = "/webhook"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+BASE_URL = os.getenv("AMVERA_APP_URL")
+WEBHOOK_PATH = f"/webhook/{TOKEN}"
+WEBHOOK_URL = f"{BASE_URL}{WEBHOOK_PATH}"
+WEBHOOK_SECRET_TOKEN = os.getenv("WEBHOOK_SECRET_TOKEN")
 DB_LITE = os.environ.get("DB_LITE")
 DB_URL = os.environ.get("DB_URL")
 PAYMENT_TOKEN = os.environ.get("PAYMENT_TOKEN")
@@ -22,3 +22,4 @@ KRYPTO_EXPRESS_API_SECRET = os.environ.get("KRYPTO_EXPRESS_API_SECRET")
 KRYPTO_EXPRESS_API_KEY = os.environ.get("KRYPTO_EXPRESS_API_KEY")
 KRYPTO_EXPRESS_API_URL = os.environ.get("KRYPTO_EXPRESS_API_URL")
 DJANGO_SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+
